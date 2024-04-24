@@ -46,7 +46,9 @@ class ShararaVideoPlayerController {
 extension PlayPause on ShararaVideoPlayerController {
 
   initialize()async{
-    await playerController.initialize();
+   if(!playerController.value.isInitialized){
+     await playerController.initialize();
+   }
   }
 
   /// toggle meanse
@@ -109,6 +111,11 @@ extension PlayPause on ShararaVideoPlayerController {
     _stateChecker(() => playerController.seekTo(position));
   }
 
+
+  /// Seek to Custom Position
+  void setLooping(final bool value){
+    _stateChecker(() => playerController.setLooping(value));
+  }
 
 
   _stateChecker(Function() callBack){

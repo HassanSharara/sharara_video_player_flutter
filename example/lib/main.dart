@@ -29,19 +29,21 @@ class VideoPlayer extends StatefulWidget {
 
 class _VideoPlayerState extends State<VideoPlayer> {
 
-  final VideoPlayerController controller1 = VideoPlayerController
- .networkUrl(Uri.parse("your_custom_url"));
   late final ShararaVideoPlayerController controller;
   @override
   void initState() {
-    controller = ShararaVideoPlayerController(playerController: controller1);
+    controller = ShararaVideoPlayerController(playerController:
+     VideoPlayerController.networkUrl(Uri.parse(
+       "[your_custom_url]"
+     ))
+    );
    controller.playerController.pause();
     super.initState();
   }
   @override
   Widget build(BuildContext context) {
     return ShararaVideoPlayer(
-        controller: controller
+      controller: controller,
     );
   }
 }
