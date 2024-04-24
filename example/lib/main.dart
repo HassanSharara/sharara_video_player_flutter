@@ -1,8 +1,8 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_player_sharara/video_player_sharara.dart';
 
 main(){
   runApp(const ExampleApp());

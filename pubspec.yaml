@@ -1,7 +1,9 @@
-name: video_player_sharara
-description: "A new Flutter package project."
-version: 0.0.1
-homepage:
+name: sharara_video_player
+description: "A new Sharara package project for Better Performance and Easy Use."
+version: 0.0.3
+homepage: https://github.com/HassanSharara
+repository: https://github.com/HassanSharara/sharara_video_player_flutter
+
 
 environment:
   sdk: '>=3.3.3 <4.0.0'
@@ -16,6 +18,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
+
+
+platforms:
+  android:
+  ios:
+  web:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

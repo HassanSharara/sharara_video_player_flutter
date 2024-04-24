@@ -36,9 +36,10 @@ make sure to dispose `ShararaVideoPlayer` after disposing The Current in Use Scr
 
 ```dart
 
+
 import 'package:flutter/material.dart';
+import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
-import 'package:video_player_sharara/video_player_sharara.dart';
 
 main(){
   runApp(const ExampleApp());
@@ -64,25 +65,15 @@ class VideoPlayer extends StatefulWidget {
 }
 
 class _VideoPlayerState extends State<VideoPlayer> {
+
+  final VideoPlayerController controller1 = VideoPlayerController
+      .networkUrl(Uri.parse("your_custom_url"));
   late final ShararaVideoPlayerController controller;
-  
   @override
   void initState() {
-    controller = ShararaVideoPlayerController(
-        playerController: VideoPlayerController
-        .networkUrl(Uri.parse("[your_custom_url]"))
-    );
-    // or you can directly create controller via factory .networkUrl
-    //
-    // controller = ShararaVideoPlayerController.networkUrl(Uri.parse("[your_custom_url]")) ; 
+    controller = ShararaVideoPlayerController(playerController: controller1);
     controller.playerController.pause();
     super.initState();
-  }
-  
-  @override 
-  dispose(){
-    super.dispose();
-    controller.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -91,6 +82,8 @@ class _VideoPlayerState extends State<VideoPlayer> {
     );
   }
 }
+
+
 
 
 
