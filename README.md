@@ -32,7 +32,7 @@ or you can use terminal command
 ### How to use
 
 Create a `ShararaVideoPlayerController` and pass the controller to `ShararaVideoPlayer`,
-make sure to dispose `ShararaVideoPlayer` after disposing The Current in Use Screen.
+make sure to dispose `ShararaVideoPlayer` after disposing the current screen.
 
 ```dart
 
@@ -66,12 +66,11 @@ class VideoPlayer extends StatefulWidget {
 
 class _VideoPlayerState extends State<VideoPlayer> {
 
-  final VideoPlayerController controller1 = VideoPlayerController
-      .networkUrl(Uri.parse("your_custom_url"));
   late final ShararaVideoPlayerController controller;
   @override
   void initState() {
-    controller = ShararaVideoPlayerController(playerController: controller1);
+    controller = ShararaVideoPlayerController(playerController:  VideoPlayerController
+        .networkUrl(Uri.parse("your_custom_url")));
     controller.playerController.pause();
     super.initState();
   }
