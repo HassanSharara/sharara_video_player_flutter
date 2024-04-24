@@ -125,341 +125,347 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   @override
   Widget build(BuildContext context) {
-    return  Scaffold(
-      body: Directionality(
-        textDirection:TextDirection.ltr,
-        child: LayoutBuilder(
-          builder:(final BuildContext context,final BoxConstraints mainLayoutConstraints){
-            if(mainLayoutConstraints.containsNan)return const SizedBox();
-            final double width = mainLayoutConstraints.maxWidth;
-            final double height = mainLayoutConstraints.maxHeight;
-            return SizedBox(
-              height:widget.height ?? mainLayoutConstraints.maxHeight,
-              width:widget.width ?? mainLayoutConstraints.maxWidth,
-              child: ValueListenableBuilder(
-                  key:UniqueKey(),
-                  valueListenable: controller.playerController,
-                  builder:(BuildContext context,final VideoPlayerValue value,_){
 
-                    return Stack(
-                      children: [
-                        if(isFullScreen)
-                          const SizedBox()
-                        else
-                          InkWell(
-                              onTap:_onClick,
-                              child: VideoPlayer(widget.controller.playerController)),
+    return  SizedBox(
+      height:widget.height,
+      width:widget.width,
+      child: Scaffold(
+        body: Directionality(
+          textDirection:TextDirection.ltr,
+          child: LayoutBuilder(
+            builder:(final BuildContext context,final BoxConstraints mainLayoutConstraints){
+              if(mainLayoutConstraints.containsNan)return const SizedBox();
+              final double width = mainLayoutConstraints.maxWidth;
+              final double height = mainLayoutConstraints.maxHeight;
+              return SizedBox(
+                height: mainLayoutConstraints.maxHeight,
+                width: mainLayoutConstraints.maxWidth,
+                child: ValueListenableBuilder(
+                    key:UniqueKey(),
+                    valueListenable: controller.playerController,
+                    builder:(BuildContext context,final VideoPlayerValue value,_){
 
-                        ValueListenableBuilder(
-                            valueListenable:bottomPosition,
-                            builder:(BuildContext context,final double bp,_){
-                              return  AnimatedPositioned(
-                                  duration:const Duration(milliseconds:300),
-                                  bottom:bp,
-                                  child: Container(
-                                    height:bottomHeight,
-                                    width:widget.width??width,
-                                    color:bottomActionsBarBackgroundColor.withOpacity(0.3),
-                                    child:widget.actionBuilder!=null?
-                                    widget.actionBuilder!(context,value)
-                                        :Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Column(
-                                        mainAxisAlignment:MainAxisAlignment.center,
-                                        crossAxisAlignment:CrossAxisAlignment.center,
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: LayoutBuilder(
-                                                  builder:(c,BoxConstraints layout){
-                                                    if(
-                                                    layout.containsNan
-                                                    )return const SizedBox();
-                                                    double currentWidgetWidth = layout.maxWidth;
-                                                    final double factor = (currentWidgetWidth/value.duration.inSeconds.toDouble()
-                                                    ).toDouble();
-                                                    double  microWidth =
-                                                        factor
-                                                            *value.position.inSeconds;
-                                                    if(microWidth.isNaN){
-                                                      microWidth = 0;
-                                                    }
-                                                    return GestureDetector(
-                                                      onHorizontalDragUpdate:(DragUpdateDetails details){
-                                                        _onClick((){});
-                                                        double inSeconds = details.localPosition.distance /
-                                                            factor ;
-                                                        int seconds;
+                      return Stack(
+                        children: [
+                          if(isFullScreen)
+                            const SizedBox()
+                          else
+                            InkWell(
+                                onTap:_onClick,
+                                child: VideoPlayer(widget.controller.playerController)),
 
-                                                        if(
-                                                        inSeconds>=value.duration.inSeconds
-                                                        ){
-                                                          seconds = value.duration.inSeconds;
-                                                        }
-                                                        else if(inSeconds<0){
-                                                          seconds = 0;
-                                                        }
-                                                        else{
-                                                          seconds = inSeconds.toInt();
-                                                        }
+                          ValueListenableBuilder(
+                              valueListenable:bottomPosition,
+                              builder:(BuildContext context,final double bp,_){
+                                return  AnimatedPositioned(
+                                    duration:const Duration(milliseconds:300),
+                                    bottom:bp,
+                                    child: Container(
+                                      height:bottomHeight,
+                                      width:widget.width??width,
+                                      color:bottomActionsBarBackgroundColor.withOpacity(0.3),
+                                      child:widget.actionBuilder!=null?
+                                      widget.actionBuilder!(context,value)
+                                          :Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: Column(
+                                          mainAxisAlignment:MainAxisAlignment.center,
+                                          crossAxisAlignment:CrossAxisAlignment.center,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Expanded(
+                                                  child: LayoutBuilder(
+                                                    builder:(c,BoxConstraints layout){
+                                                      if(
+                                                      layout.containsNan
+                                                      )return const SizedBox();
+                                                      double currentWidgetWidth = layout.maxWidth;
+                                                      final double factor = (currentWidgetWidth/value.duration.inSeconds.toDouble()
+                                                      ).toDouble();
+                                                      double  microWidth =
+                                                          factor
+                                                              *value.position.inSeconds;
+                                                      if(microWidth.isNaN){
+                                                        microWidth = 0;
+                                                      }
+                                                      return GestureDetector(
+                                                        onHorizontalDragUpdate:(DragUpdateDetails details){
+                                                          _onClick((){});
+                                                          double inSeconds = details.localPosition.distance /
+                                                              factor ;
+                                                          int seconds;
+
+                                                          if(
+                                                          inSeconds>=value.duration.inSeconds
+                                                          ){
+                                                            seconds = value.duration.inSeconds;
+                                                          }
+                                                          else if(inSeconds<0){
+                                                            seconds = 0;
+                                                          }
+                                                          else{
+                                                            seconds = inSeconds.toInt();
+                                                          }
 
 
-                                                        final Duration seekTo = Duration(seconds:seconds);
-                                                        controller
-                                                            .playerController
-                                                            .seekTo(seekTo);
-                                                      },
-                                                      child: Stack(
-                                                        children: [
+                                                          final Duration seekTo = Duration(seconds:seconds);
+                                                          controller
+                                                              .playerController
+                                                              .seekTo(seekTo);
+                                                        },
+                                                        child: Stack(
+                                                          children: [
 
-                                                          Container(
-                                                            height:8,
-                                                            width:currentWidgetWidth,
-                                                            decoration:BoxDecoration(
-                                                                borderRadius:BorderRadius.circular(15),
-                                                                color:Colors.grey.withOpacity(0.8)
+                                                            Container(
+                                                              height:8,
+                                                              width:currentWidgetWidth,
+                                                              decoration:BoxDecoration(
+                                                                  borderRadius:BorderRadius.circular(15),
+                                                                  color:Colors.grey.withOpacity(0.8)
+                                                              ),
                                                             ),
-                                                          ),
 
-                                                          Container(
-                                                            height:8,
-                                                            width:microWidth,
-                                                            constraints:BoxConstraints(
-                                                                minWidth:0,
-                                                                maxWidth:microWidth,
-                                                                minHeight:0,
-                                                                maxHeight:8
+                                                            Container(
+                                                              height:8,
+                                                              width:microWidth,
+                                                              constraints:BoxConstraints(
+                                                                  minWidth:0,
+                                                                  maxWidth:microWidth,
+                                                                  minHeight:0,
+                                                                  maxHeight:8
+                                                              ),
+                                                              decoration:BoxDecoration(
+                                                                  borderRadius:BorderRadius.circular(15),
+                                                                  color:Colors.white
+                                                              ),
                                                             ),
-                                                            decoration:BoxDecoration(
-                                                                borderRadius:BorderRadius.circular(15),
-                                                                color:Colors.white
-                                                            ),
-                                                          ),
 
-                                                        ],
-                                                      ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(width:5,),
-                                              Text(
-                                                "${value.position
-                                                    .toValidString} / ${value.duration
-                                                    .toValidString}",
-                                                style: TextStyle(
-                                                    fontSize:10,
-                                                    color:bottomActionsBarColor
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Expanded(
-                                            child: Padding(
-                                              padding: const EdgeInsets.all(8.0),
-                                              child: Row(
-                                                mainAxisAlignment:MainAxisAlignment.spaceBetween,
-                                                children:
-                                                [
-                                                  InkWell(
-                                                    onTap:()=>_onClick(controller.toggle),
-                                                    child:Icon(
-                                                      playIcons,
-                                                      color:bottomActionsBarColor,
-                                                      size:widget.bottomActionsBarSize,
-                                                    ),
-                                                  ),
-
-                                                  Expanded(
-                                                    child: Row(
-                                                      mainAxisAlignment:MainAxisAlignment.end,
-                                                      crossAxisAlignment:CrossAxisAlignment.center,
-                                                      children: [
-                                                        const SizedBox(width:5,),
-                                                        GestureDetector(
-                                                          onHorizontalDragUpdate:(details){
-                                                            _onClick((){
-                                                              double distance
-                                                              = (details.localPosition.distance);
-                                                              if(details.localPosition.direction>1){
-                                                                distance-=10;
-                                                              }
-                                                              if(details.localPosition.direction>=2){
-                                                                distance=0;
-                                                              }
-                                                              distance *=2;
-                                                              double volume = (distance * 60 )/ 100;
-                                                              volume/=100;
-                                                              if(volume>1){
-                                                                volume = 1;
-                                                              }else if (volume<0){
-                                                                volume = 0;
-                                                              }
-                                                              controller.setVolume(volume);
-                                                            });
-                                                          },
-                                                          child: ConstrainedBox(
-                                                            constraints:const BoxConstraints(
-                                                                maxWidth:60
-                                                            ),
-                                                            child: Column(
-                                                              mainAxisAlignment:MainAxisAlignment.end,
-                                                              children: [
-                                                                LinearProgressIndicator(
-                                                                  value:value.volume,
-                                                                  color:bottomActionsBarColor,
-                                                                  backgroundColor:bottomActionsBarBackgroundColor
-                                                                      .withOpacity(0.6),
-                                                                )
-                                                              ],
-                                                            ),
-                                                          ),
+                                                          ],
                                                         ),
+                                                      );
+                                                    },
+                                                  ),
+                                                ),
+                                                const SizedBox(width:5,),
+                                                Text(
+                                                  "${value.position
+                                                      .toValidString} / ${value.duration
+                                                      .toValidString}",
+                                                  style: TextStyle(
+                                                      fontSize:10,
+                                                      color:bottomActionsBarColor
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Row(
+                                                  mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                                                  children:
+                                                  [
+                                                    InkWell(
+                                                      onTap:()=>_onClick(controller.toggle),
+                                                      child:Icon(
+                                                        playIcons,
+                                                        color:bottomActionsBarColor,
+                                                        size:widget.bottomActionsBarSize,
+                                                      ),
+                                                    ),
 
-                                                        const SizedBox(width:5,),
-
-                                                        if(value.volume==0)
+                                                    Expanded(
+                                                      child: Row(
+                                                        mainAxisAlignment:MainAxisAlignment.end,
+                                                        crossAxisAlignment:CrossAxisAlignment.center,
+                                                        children: [
+                                                          const SizedBox(width:5,),
                                                           GestureDetector(
-                                                            onTap:()=>_onClick(()
-                                                            =>controller.deMute()),
-                                                            child: Icon(Icons.volume_off,
+                                                            onHorizontalDragUpdate:(details){
+                                                              _onClick((){
+                                                                double distance
+                                                                = (details.localPosition.distance);
+                                                                if(details.localPosition.direction>1){
+                                                                  distance-=10;
+                                                                }
+                                                                if(details.localPosition.direction>=2){
+                                                                  distance=0;
+                                                                }
+                                                                distance *=2;
+                                                                double volume = (distance * 60 )/ 100;
+                                                                volume/=100;
+                                                                if(volume>1){
+                                                                  volume = 1;
+                                                                }else if (volume<0){
+                                                                  volume = 0;
+                                                                }
+                                                                controller.setVolume(volume);
+                                                              });
+                                                            },
+                                                            child: ConstrainedBox(
+                                                              constraints:const BoxConstraints(
+                                                                  maxWidth:60
+                                                              ),
+                                                              child: Column(
+                                                                mainAxisAlignment:MainAxisAlignment.end,
+                                                                children: [
+                                                                  LinearProgressIndicator(
+                                                                    value:value.volume,
+                                                                    color:bottomActionsBarColor,
+                                                                    backgroundColor:bottomActionsBarBackgroundColor
+                                                                        .withOpacity(0.6),
+                                                                  )
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+
+                                                          const SizedBox(width:5,),
+
+                                                          if(value.volume==0)
+                                                            GestureDetector(
+                                                              onTap:()=>_onClick(()
+                                                              =>controller.deMute()),
+                                                              child: Icon(Icons.volume_off,
+                                                                color:bottomActionsBarColor,
+                                                                size:widget.bottomActionsBarSize,
+                                                              ),
+                                                            )
+                                                          else
+                                                            GestureDetector(
+                                                              onTap:()=>_onClick(controller.mute),
+                                                              child: Icon(Icons.volume_up_outlined,
+                                                                color:bottomActionsBarColor,
+                                                                size:widget.bottomActionsBarSize,
+                                                              ),
+                                                            ),
+
+                                                          const SizedBox(width:5,),
+                                                          GestureDetector(
+                                                            onTap:()async{
+
+                                                              if(widget.convexMirror){
+                                                                Navigator.maybePop(context);
+                                                                return;
+                                                              }
+                                                              setState(() {
+                                                                isFullScreen = true;
+                                                              });
+
+                                                              final Widget child =   FullScreenMode(controller:controller,
+                                                                onDispose:(){
+                                                                  Future.delayed(const Duration(
+                                                                      milliseconds:100
+                                                                  )).then((value) {
+                                                                    WidgetsBinding
+                                                                        .instance
+                                                                        .addPostFrameCallback((timeStamp) {
+                                                                      setState(() {
+                                                                        isFullScreen = false;
+                                                                      });
+                                                                    });
+                                                                  });
+                                                                },
+                                                              );
+                                                              if(widget.onNavigate!=null){
+                                                                return widget.onNavigate!(child);
+                                                              }
+
+                                                              Navigator
+                                                                  .push(context,
+                                                                  MaterialPageRoute(
+                                                                      builder:(_)=>
+                                                                      child
+                                                                  )
+                                                              );
+                                                            },
+                                                            child: Icon(
+                                                              Icons.fullscreen,
                                                               color:bottomActionsBarColor,
                                                               size:widget.bottomActionsBarSize,
                                                             ),
                                                           )
-                                                        else
-                                                          GestureDetector(
-                                                            onTap:()=>_onClick(controller.mute),
-                                                            child: Icon(Icons.volume_up_outlined,
-                                                              color:bottomActionsBarColor,
-                                                              size:widget.bottomActionsBarSize,
-                                                            ),
-                                                          ),
-
-                                                        const SizedBox(width:5,),
-                                                        GestureDetector(
-                                                          onTap:()async{
-
-                                                            if(widget.convexMirror){
-                                                              Navigator.maybePop(context);
-                                                              return;
-                                                            }
-                                                            setState(() {
-                                                              isFullScreen = true;
-                                                            });
-
-                                                            final Widget child =   FullScreenMode(controller:controller,
-                                                              onDispose:(){
-                                                                Future.delayed(const Duration(
-                                                                    milliseconds:100
-                                                                )).then((value) {
-                                                                  WidgetsBinding
-                                                                      .instance
-                                                                      .addPostFrameCallback((timeStamp) {
-                                                                    setState(() {
-                                                                      isFullScreen = false;
-                                                                    });
-                                                                  });
-                                                                });
-                                                              },
-                                                            );
-                                                            if(widget.onNavigate!=null){
-                                                              return widget.onNavigate!(child);
-                                                            }
-
-                                                            Navigator
-                                                                .push(context,
-                                                                MaterialPageRoute(
-                                                                    builder:(_)=>
-                                                                    child
-                                                                )
-                                                            );
-                                                          },
-                                                          child: Icon(
-                                                            Icons.fullscreen,
-                                                            color:bottomActionsBarColor,
-                                                            size:widget.bottomActionsBarSize,
-                                                          ),
-                                                        )
-                                                      ],
+                                                        ],
+                                                      ),
                                                     ),
-                                                  ),
 
-                                                ],
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  )
+                                    )
 
-                              );
-                            }),
-                        ValueListenableBuilder(
-                            valueListenable: bottomPosition,
-                            builder:(BuildContext context,final double bd,_){
-                              if(value.errorDescription!=null){
-                                return  Center(
-                                  child: Icon(Icons.error,
-                                    size:40,
-                                    color:bottomActionsBarColor,),
                                 );
-                              }
-                              if(bd<0)return const SizedBox();
-                              if(value.isBuffering) {
-                                return  Center(child:SizedBox(
-                                  height:10,
-                                  width:20,
-                                  child:LinearProgressIndicator(
-                                    backgroundColor:bottomActionsBarBackgroundColor,
-                                    color:bottomActionsBarColor,
-                                  ),
-                                ),);
-                              }
-                              return  GestureDetector(
-                                onTap:()=>_onClick(controller.toggle),
-                                child: Center(
-                                  child:Icon(
-                                    playIcons,color:Colors.white.withOpacity(0.6),
-                                    size:50,
-                                  ),
-                                ),
-                              );
+                              }),
 
-                            }),
-                        Row(
-                          mainAxisAlignment:MainAxisAlignment.spaceBetween,
-                          textDirection:TextDirection.ltr,
-                          children: [
-                            LeftAceClicker(
-                                height:widget.height?? height,
-                                bottomActionsBarColor:bottomActionsBarColor,
-                                onCall:(){
-                                  controller.seekTo(
-                                      value.position - const Duration(seconds: 4)
-                                  );
-                                }
-                            ),
-                            RightAceClicker(
-                                height:widget.height??height,
-                                bottomActionsBarColor:bottomActionsBarColor,
-                                onCall:(){
-                                  controller.seekTo(
-                                      value.position + const Duration(seconds: 4)
-                                  );
-                                }
-                            ),
-                          ],
-                        )
+                          if(value.errorDescription!=null)
+                            Center(
+                              child: Icon(Icons.error,
+                                size:40,
+                                color:bottomActionsBarColor,),
+                            )
+                         else if(value.isBuffering)
+                            Center(child:SizedBox(
+                              height:10,
+                              width:20,
+                              child:LinearProgressIndicator(
+                                backgroundColor:bottomActionsBarBackgroundColor,
+                                color:bottomActionsBarColor,
+                              ),
+                            ),)
+                          else
+                          ValueListenableBuilder(
+                              valueListenable: bottomPosition,
+                              builder:(BuildContext context,final double bd,_){
+                                if(bd<0)return const SizedBox();
 
-                      ],
-                    );
-                  }
-              ),
-            );
-          },
+                                return  GestureDetector(
+                                  onTap:()=>_onClick(controller.toggle),
+                                  child: Center(
+                                    child:Icon(
+                                      playIcons,color:Colors.white.withOpacity(0.6),
+                                      size:50,
+                                    ),
+                                  ),
+                                );
+
+                              }),
+                          Row(
+                            mainAxisAlignment:MainAxisAlignment.spaceBetween,
+                            textDirection:TextDirection.ltr,
+                            children: [
+                              LeftAceClicker(
+                                  height:widget.height?? height,
+                                  bottomActionsBarColor:bottomActionsBarColor,
+                                  onCall:(){
+                                    controller.seekTo(
+                                        value.position - const Duration(seconds: 4)
+                                    );
+                                  }
+                              ),
+                              RightAceClicker(
+                                  height:widget.height??height,
+                                  bottomActionsBarColor:bottomActionsBarColor,
+                                  onCall:(){
+                                    controller.seekTo(
+                                        value.position + const Duration(seconds: 4)
+                                    );
+                                  }
+                              ),
+                            ],
+                          )
+
+                        ],
+                      );
+                    }
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
