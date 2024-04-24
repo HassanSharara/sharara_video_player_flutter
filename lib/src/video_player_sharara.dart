@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,7 +18,7 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.autoInitialize = true,
     this.convexMirror = false,
     this.autoLoop = false,
-    this.bottomActionsBarSize = 25,
+    this.bottomActionsBarSize = 35,
   });
 
   /// auto buffering the video
@@ -84,7 +86,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
     super.dispose();
   }
 
-  double get bottomHeight => widget.bottomActionsBarHeight??60;
+  double get bottomHeight => widget.bottomActionsBarHeight??80;
   DateTime? lastDateTime;
 
   _onClick([final Function()? callBack]){
@@ -307,24 +309,35 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               constraints:const BoxConstraints(
                                                                   maxWidth:60
                                                               ),
+
                                                               child: Column(
-                                                                mainAxisAlignment:MainAxisAlignment.end,
+                                                                mainAxisAlignment:MainAxisAlignment.spaceBetween,
                                                                 children: [
+                                                                   Expanded(
+                                                                     child: Container(
+                                                                     color:Colors.transparent,
+                                                                                                                                       ),
+                                                                   ),
                                                                   LinearProgressIndicator(
                                                                     value:value.volume,
                                                                     color:bottomActionsBarColor,
                                                                     backgroundColor:bottomActionsBarBackgroundColor
                                                                         .withOpacity(0.6),
-                                                                  )
+                                                                  ),
+                                                                  Expanded(
+                                                                    child: Container(
+                                                                      color:Colors.transparent,
+                                                                    ),
+                                                                  ),
                                                                 ],
                                                               ),
                                                             ),
                                                           ),
 
-                                                          const SizedBox(width:5,),
+                                                          const SizedBox(width:6,),
 
                                                           if(value.volume==0)
-                                                            GestureDetector(
+                                                            InkWell(
                                                               onTap:()=>_onClick(()
                                                               =>controller.deMute()),
                                                               child: Icon(Icons.volume_off,
@@ -333,7 +346,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             )
                                                           else
-                                                            GestureDetector(
+                                                            InkWell(
                                                               onTap:()=>_onClick(controller.mute),
                                                               child: Icon(Icons.volume_up_outlined,
                                                                 color:bottomActionsBarColor,
@@ -341,8 +354,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             ),
 
-                                                          const SizedBox(width:5,),
-                                                          GestureDetector(
+                                                          const SizedBox(width:8,),
+                                                          InkWell(
                                                             onTap:()async{
 
                                                               if(widget.convexMirror){
