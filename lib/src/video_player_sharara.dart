@@ -400,10 +400,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                         ValueListenableBuilder(
                             valueListenable: bottomPosition,
                             builder:(BuildContext context,final double bd,_){
-                              if(bd<0)return const SizedBox();
                               if(value.errorDescription!=null){
-                                return  Icon(Icons.error,color:bottomActionsBarColor,);
+                                return  Center(
+                                  child: Icon(Icons.error,
+                                    size:40,
+                                    color:bottomActionsBarColor,),
+                                );
                               }
+                              if(bd<0)return const SizedBox();
                               if(value.isBuffering) {
                                 return  Center(child:SizedBox(
                                   height:10,
