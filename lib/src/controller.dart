@@ -35,6 +35,10 @@ class ShararaVideoPlayerController {
   /// Whole Route
    void dispose(){
      isDisposed = true;
+     Future.delayed(const Duration(seconds:4))
+     .then((value) {
+       bottomPosition.dispose();
+     });
    }
 }
 
