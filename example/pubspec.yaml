@@ -36,7 +36,6 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6
   video_player: ^2.8.6
-  flick_video_player: ^0.7.0
   video_player_sharara:
     path: ..
 
