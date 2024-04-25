@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
@@ -282,15 +281,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                           const SizedBox(width:5,),
                                                           GestureDetector(
                                                             onHorizontalDragUpdate:(details){
-                                                              if(
-                                                              lastDateTime ==null ||
-                                                                  DateTime.now()
-                                                                      .difference(
-                                                                      lastDateTime!
-                                                                  ).inSeconds >= 4
-                                                              ){
-                                                                _onClick();
-                                                              }
+                                                              _extendLastDateTimeForDisableHiding();
                                                               double distance
                                                               = (details.localPosition.distance);
                                                               if(details.localPosition.direction>1){
@@ -342,8 +333,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
                                                           if(value.volume==0)
                                                             InkWell(
-                                                              onTap:()=>_onClick(()
-                                                              =>controller.deMute()),
+                                                              onTap:()=>_onClick(controller.deMute),
                                                               child: Icon(Icons.volume_off,
                                                                 color:bottomActionsBarColor,
                                                                 size:widget.bottomActionsBarSize,
@@ -456,15 +446,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 decreasingLoopTrigger = true;
                                                 increasingLoopTrigger = false;
                                                 while(decreasingLoopTrigger){
-                                                  if(
-                                                  lastDateTime ==null ||
-                                                      DateTime.now()
-                                                          .difference(
-                                                          lastDateTime!
-                                                      ).inSeconds >= 4
-                                                  ){
-                                                    _onClick();
-                                                  }
+                                                  _extendLastDateTimeForDisableHiding();
                                                   await Future.delayed(const Duration(
                                                       milliseconds:50
                                                   ));
@@ -500,12 +482,13 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                               decoration:BoxDecoration(
                                                   shape:BoxShape.circle,
                                                   color: bottomActionsBarBackgroundColor
+                                                  .withOpacity(0.2)
                                               ),
                                               child:Column(
                                                 children: [
                                                   Icon(Icons.volume_up_outlined,
                                                     color:bottomActionsBarColor
-                                                        .withOpacity(0.8),
+                                                        .withOpacity(0.4),
                                                     size:widget.bigIconsSize
                                                         -5 ,
                                                   ),
@@ -522,15 +505,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                increasingLoopTrigger = true;
                                                decreasingLoopTrigger = false;
                                                while(increasingLoopTrigger){
-                                                 if(
-                                                 lastDateTime ==null ||
-                                                 DateTime.now()
-                                                 .difference(
-                                                     lastDateTime!
-                                                 ).inSeconds >= 4
-                                                 ){
-                                                   _onClick();
-                                                 }
+                                                 _extendLastDateTimeForDisableHiding();
                                                  await Future.delayed(const Duration(
                                                    milliseconds:50
                                                  ));
@@ -558,7 +533,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                               },
                                               onLongPress:(){},
                                               child: Icon(Icons.add_circle,
-                                                color:bottomActionsBarColor.withOpacity(0.6),
+                                                color:bottomActionsBarColor
+                                                    .withOpacity(0.4),
                                                 size:widget.bigIconsSize-5,
                                               ),
                                             ),
@@ -656,16 +632,20 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
     return Icons.play_circle;
   }
 
-  void _updateVolumeBy(double factor, Offset localPosition, VideoPlayerValue value) {
+  _extendLastDateTimeForDisableHiding(){
     if(
     lastDateTime ==null ||
         DateTime.now()
             .difference(
             lastDateTime!
-        ).inSeconds >= 4
+        ).inSeconds >= 3
     ){
-      _onClick();
+      lastDateTime = DateTime.now();
+      _autoHideMicroWorker();
     }
+  }
+  void _updateVolumeBy(double factor, Offset localPosition, VideoPlayerValue value) {
+    _extendLastDateTimeForDisableHiding();
     double inSeconds = localPosition.distance /
         factor ;
     int seconds;
@@ -697,9 +677,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
   }
 extension ToString on Duration {
   String get toValidString {
-    int seconds = inSeconds;
+    int milliSeconds = inMilliseconds;
+    int seconds = 0;
     int minutes = 0;
     int hours = 0 ;
+    while(milliSeconds>=1000){
+      milliSeconds-=1000;
+      seconds++;
+    }
     while(seconds>=60){
       seconds-=60;
       minutes++;

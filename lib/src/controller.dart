@@ -85,12 +85,18 @@ extension PlayPause on ShararaVideoPlayerController {
 
   /// Mute => A shortcut for setting volume to 0.0 value
   void mute() {
-    lastVolume = playerController.value.volume;
+    final double volume = playerController.value.volume;
+    if(volume>=0.1){
+      lastVolume = volume;
+    }
     setVolume(0);
   }
 
   /// setting the volume to the last volume before mute state
   void deMute() {
+    if(lastVolume<=0.09){
+      lastVolume = 0.1;
+    }
     setVolume(lastVolume);
   }
 
