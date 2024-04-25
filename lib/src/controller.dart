@@ -99,8 +99,23 @@ extension PlayPause on ShararaVideoPlayerController {
   /// Notice That The Maximum Volume Value is 1.0
   ///
   /// while The Lowest One is 0.0 (mute state)
-  void setVolume(final double volume){
+  void setVolume(double volume){
+    if(volume>=1){
+      volume = 1;
+    }else if (volume<=0){
+      volume = 0;
+    }
     _stateChecker(() => playerController.setVolume(volume));
+  }
+
+  /// Increase The volume by [value]
+  void increaseVolumeBy( double value){
+    setVolume(playerController.value.volume + value);
+  }
+
+  /// decrease The volume by [value]
+  void decreaseVolumeBy( double value){
+    setVolume(playerController.value.volume - value);
   }
 
   /// Seek to Custom Position
@@ -108,6 +123,20 @@ extension PlayPause on ShararaVideoPlayerController {
     _stateChecker(() => playerController.seekTo(position));
   }
 
+
+  /// plusScrubbing and Skip some seconds of video
+  void plusScrubbing(final int seconds){
+    _stateChecker(() => playerController.seekTo(
+        playerController.value.position + Duration(seconds:seconds)
+    ));
+  }
+
+  /// minusScrubbing and Skip back some seconds of video
+  void minusScrubbing(final int seconds){
+    _stateChecker(() => playerController.seekTo(
+        playerController.value.position - Duration(seconds:seconds)
+    ));
+  }
 
   /// Seek to Custom Position
   void setLooping(final bool value){

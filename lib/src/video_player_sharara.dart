@@ -16,7 +16,9 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.autoInitialize = true,
     this.convexMirror = false,
     this.autoLoop = false,
+    this.showTopVolumeController = true,
     this.bottomActionsBarSize = 28,
+    this.bigIconsSize = 40,
   });
 
   /// auto buffering the video
@@ -42,8 +44,13 @@ class ShararaVideoPlayer extends StatefulWidget {
   /// notice That you need to scale [bottomActionsBarSize] with it to Fit Layout
   final double bottomActionsBarSize;
 
+  /// set the Size of Big Icons
+  final double bigIconsSize;
+
   /// do not change this critical for change the size of video player
   final bool convexMirror;
+  /// if you want to hide the top volume controller
+  final bool showTopVolumeController;
   /// set bottom Bar Actions Widgets
   final Widget Function(BuildContext,VideoPlayerValue)? actionBuilder;
   @override
@@ -52,6 +59,10 @@ class ShararaVideoPlayer extends StatefulWidget {
 
 class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
   {
+  bool increasingLoopTrigger = false;
+
+  bool decreasingLoopTrigger = false;
+
      ValueNotifier<double> get bottomPosition => controller.bottomPosition;
     ShararaVideoPlayerController get controller => widget.controller;
   Color get bottomActionsBarColor =>(widget.bottomActionsBarColor ??  Colors.white);
@@ -150,7 +161,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                           if(isFullScreen)
                             const SizedBox()
                           else
-                            InkWell(
+                            GestureDetector(
                                 onTap:_onClick,
                                 child: VideoPlayer(widget.controller.playerController)),
 
@@ -190,29 +201,13 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                         microWidth = 0;
                                                       }
                                                       return GestureDetector(
+
                                                         onHorizontalDragUpdate:(DragUpdateDetails details){
-                                                          _onClick((){});
-                                                          double inSeconds = details.localPosition.distance /
-                                                              factor ;
-                                                          int seconds;
-
-                                                          if(
-                                                          inSeconds>=value.duration.inSeconds
-                                                          ){
-                                                            seconds = value.duration.inSeconds;
-                                                          }
-                                                          else if(inSeconds<0){
-                                                            seconds = 0;
-                                                          }
-                                                          else{
-                                                            seconds = inSeconds.toInt();
-                                                          }
-
-
-                                                          final Duration seekTo = Duration(seconds:seconds);
-                                                          controller
-                                                              .playerController
-                                                              .seekTo(seekTo);
+                                                         _updateVolumeBy(
+                                                           factor,
+                                                           details.localPosition,
+                                                           value
+                                                         );
                                                         },
                                                         child: Stack(
                                                           children: [
@@ -409,42 +404,208 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                         ),
                                       ),
                                     )
-
                                 );
                               }),
 
                           if(value.errorDescription!=null)
                             Center(
                               child: Icon(Icons.error,
-                                size:40,
+                                size:widget.bigIconsSize,
                                 color:bottomActionsBarColor,),
                             )
-                         else if(value.isBuffering)
-                            Center(child:SizedBox(
-                              height:10,
-                              width:20,
-                              child:LinearProgressIndicator(
-                                backgroundColor:bottomActionsBarBackgroundColor,
-                                color:bottomActionsBarColor,
-                              ),
-                            ),)
+
                           else
                           ValueListenableBuilder(
                               valueListenable: bottomPosition,
-                              builder:(BuildContext context,final double bd,_){
+                              builder:(BuildContext context,final double bd,_)
+                              {
                                 if(bd<0)return const SizedBox();
-
-                                return  GestureDetector(
-                                  onTap:()=>_onClick(controller.toggle),
-                                  child: Center(
-                                    child:Icon(
-                                      playIcons,color:Colors.white.withOpacity(0.6),
-                                      size:50,
+                                return  Stack(
+                                  children: [
+                                    IgnorePointer(
+                                      ignoring:true,
+                                      child: Container(
+                                        color:Colors.black.withOpacity(0.2),
+                                        height:height,
+                                        width:width,
+                                      ),
                                     ),
-                                  ),
+                                    
+                                    Column(
+                                      mainAxisSize:MainAxisSize.max,
+                                      mainAxisAlignment:MainAxisAlignment.start,
+                                      children: [
+                                        SizedBox(height:height*0.1,),
+                                        if(widget.showTopVolumeController)
+                                        Row(
+                                          mainAxisAlignment:MainAxisAlignment.spaceAround,
+                                          children: [
+                                            GestureDetector(
+                                              onLongPressStart:(_)async{
+                                                decreasingLoopTrigger = true;
+                                                increasingLoopTrigger = false;
+                                                while(decreasingLoopTrigger){
+                                                  if(
+                                                  lastDateTime ==null ||
+                                                      DateTime.now()
+                                                          .difference(
+                                                          lastDateTime!
+                                                      ).inSeconds >= 4
+                                                  ){
+                                                    _onClick();
+                                                  }
+                                                  await Future.delayed(const Duration(
+                                                      milliseconds:50
+                                                  ));
+                                                  controller.decreaseVolumeBy(0.01);
+                                                  if(controller.playerController.value
+                                                      .volume<=0.01){
+                                                    increasingLoopTrigger = false;
+                                                    decreasingLoopTrigger = false;
+                                                    break;
+                                                  }
+                                                }
+                                              },
+                                              onLongPressEnd:(_){
+                                                increasingLoopTrigger = false;
+                                                decreasingLoopTrigger = false;
+                                              },
+                                              onTap:(){
+                                                increasingLoopTrigger = false;
+                                                decreasingLoopTrigger = false;
+                                                _onClick(
+                                                        ()=>
+                                                        controller.
+                                                        decreaseVolumeBy(0.01)
+                                                );
+                                              },
+                                              child: Icon(Icons.remove_circle,
+                                                color:bottomActionsBarColor.withOpacity(0.6),
+                                                size:widget.bigIconsSize,
+                                              ),
+                                            ),
+                                            Container(
+                                              padding:const EdgeInsets.all(20.0),
+                                              decoration:BoxDecoration(
+                                                  shape:BoxShape.circle,
+                                                  color: bottomActionsBarBackgroundColor
+                                              ),
+                                              child:Column(
+                                                children: [
+                                                  Icon(Icons.volume_up_outlined,
+                                                    color:bottomActionsBarColor
+                                                        .withOpacity(0.8),
+                                                    size:widget.bigIconsSize
+                                                        -5 ,
+                                                  ),
+                                                  const SizedBox(height:5,),
+                                                  Text((value.volume*100).toStringAsFixed(0),
+                                                    style:TextStyle(color:bottomActionsBarColor),
+                                                  )
+                                                ],
+                                              ),
+
+                                            ),
+                                            GestureDetector(
+                                             onLongPressStart:(_)async{
+                                               increasingLoopTrigger = true;
+                                               decreasingLoopTrigger = false;
+                                               while(increasingLoopTrigger){
+                                                 if(
+                                                 lastDateTime ==null ||
+                                                 DateTime.now()
+                                                 .difference(
+                                                     lastDateTime!
+                                                 ).inSeconds >= 4
+                                                 ){
+                                                   _onClick();
+                                                 }
+                                                 await Future.delayed(const Duration(
+                                                   milliseconds:50
+                                                 ));
+                                                 controller.increaseVolumeBy(0.01);
+                                                 if(controller.playerController.value
+                                                 .volume>=0.99){
+                                                   increasingLoopTrigger = false;
+                                                   decreasingLoopTrigger = false;
+                                                   break;
+                                                 }
+                                               }
+                                             },
+                                              onLongPressEnd:(_){
+                                                increasingLoopTrigger = false;
+                                                decreasingLoopTrigger = false;
+                                              },
+                                              onTap:(){
+                                                increasingLoopTrigger = false;
+                                                decreasingLoopTrigger = false;
+                                                _onClick(
+                                                    ()=>
+                                                    controller
+                                                    .increaseVolumeBy(0.01)
+                                                );
+                                              },
+                                              onLongPress:(){},
+                                              child: Icon(Icons.add_circle,
+                                                color:bottomActionsBarColor.withOpacity(0.6),
+                                                size:widget.bigIconsSize-5,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      ],
+                                    ),
+                                    Center(
+                                      child:Row(
+                                        children: [
+                                          Expanded(child:
+                                          GestureDetector(
+                                            onTap:()=>
+                                                _onClick(()=>controller.minusScrubbing(10)),
+                                            child: Icon(
+                                              Icons.keyboard_double_arrow_left_rounded,
+                                              size:35,
+                                              color:bottomActionsBarColor.withOpacity(0.6),                                         ),
+                                          )
+                                          ),
+                                          Expanded(child:
+                                          (value.isBuffering)
+                                              ?
+                                          Center(child:SizedBox(
+                                            height:10,
+                                            width:20,
+                                            child:LinearProgressIndicator(
+                                              backgroundColor:bottomActionsBarBackgroundColor,
+                                              color:bottomActionsBarColor,
+                                            ),
+                                          ),)
+                                              :
+                                          GestureDetector(
+                                            onTap:()=>_onClick(controller.toggle),
+                                            child: Icon(
+                                              playIcons,color:bottomActionsBarColor.withOpacity(0.6),
+                                              size:50,
+                                            ),
+                                          )),
+                                          Expanded(child:
+                                          GestureDetector(
+                                            onTap:()=>_onClick(
+                                                    ()=>controller.plusScrubbing(10)
+                                            ),
+                                            child: Icon(
+                                              Icons.keyboard_double_arrow_right_rounded,
+                                              size:35,
+                                              color:bottomActionsBarColor.withOpacity(0.6),                                         ),
+                                          )
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  ],
                                 );
 
-                              }),
+                              }
+                              ),
                           Row(
                             mainAxisAlignment:MainAxisAlignment.spaceBetween,
                             textDirection:TextDirection.ltr,
@@ -453,18 +614,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                   height:widget.height?? height,
                                   bottomActionsBarColor:bottomActionsBarColor,
                                   onCall:(){
-                                    controller.seekTo(
-                                        value.position - const Duration(seconds: 4)
-                                    );
+                                    controller.plusScrubbing(4);
                                   }
                               ),
                               RightAceClicker(
                                   height:widget.height??height,
                                   bottomActionsBarColor:bottomActionsBarColor,
                                   onCall:(){
-                                    controller.seekTo(
-                                        value.position + const Duration(seconds: 4)
-                                    );
+                                    controller.minusScrubbing(4);
                                   }
                               ),
                             ],
@@ -486,6 +643,31 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
     if(player.isCompleted)return Icons.refresh;
     if(player.isPlaying)return Icons.pause_circle;
     return Icons.play_circle;
+  }
+
+  void _updateVolumeBy(double factor, Offset localPosition, VideoPlayerValue value) {
+    _onClick((){});
+    double inSeconds = localPosition.distance /
+        factor ;
+    int seconds;
+
+    if(
+    inSeconds>=value.duration.inSeconds
+    ){
+      seconds = value.duration.inSeconds;
+    }
+    else if(inSeconds<0){
+      seconds = 0;
+    }
+    else{
+      seconds = inSeconds.toInt();
+    }
+
+
+    final Duration seekTo = Duration(seconds:seconds);
+    controller
+        .playerController
+        .seekTo(seekTo);
   }
 
   }
