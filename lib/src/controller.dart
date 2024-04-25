@@ -72,9 +72,6 @@ extension PlayPause on ShararaVideoPlayerController {
   /// playing the video
   void play(){
     _stateChecker(() async{
-      if(playerController.value.isInitialized == false ){
-         initialize();
-      }
       playerController.play();
     });
   }

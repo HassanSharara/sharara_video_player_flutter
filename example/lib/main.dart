@@ -43,7 +43,6 @@ class _VideoPlayerState extends State<VideoPlayer> {
   @override
   Widget build(BuildContext context) {
     return ShararaVideoPlayer(
-
       controller: controller,
     );
   }
