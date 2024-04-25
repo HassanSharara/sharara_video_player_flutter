@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
@@ -105,6 +106,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
       if(
       dif < 3 && dif>0  ){
         _closeControls();
+        if(callBack!=null){
+         callBack();
+        }
         return;
       }
     }
@@ -261,7 +265,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                   mainAxisAlignment:MainAxisAlignment.spaceBetween,
                                                   children:
                                                   [
-                                                    InkWell(
+                                                    GestureDetector(
                                                       onTap:()=>_onClick(controller.toggle),
                                                       child:Icon(
                                                         playIcons,
@@ -278,25 +282,32 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                           const SizedBox(width:5,),
                                                           GestureDetector(
                                                             onHorizontalDragUpdate:(details){
-                                                              _onClick((){
-                                                                double distance
-                                                                = (details.localPosition.distance);
-                                                                if(details.localPosition.direction>1){
-                                                                  distance-=10;
-                                                                }
-                                                                if(details.localPosition.direction>=2){
-                                                                  distance=0;
-                                                                }
-                                                                distance *=2;
-                                                                double volume = (distance * 60 )/ 100;
-                                                                volume/=100;
-                                                                if(volume>1){
-                                                                  volume = 1;
-                                                                }else if (volume<0){
-                                                                  volume = 0;
-                                                                }
-                                                                controller.setVolume(volume);
-                                                              });
+                                                              if(
+                                                              lastDateTime ==null ||
+                                                                  DateTime.now()
+                                                                      .difference(
+                                                                      lastDateTime!
+                                                                  ).inSeconds >= 4
+                                                              ){
+                                                                _onClick();
+                                                              }
+                                                              double distance
+                                                              = (details.localPosition.distance);
+                                                              if(details.localPosition.direction>1){
+                                                                distance-=10;
+                                                              }
+                                                              if(details.localPosition.direction>=2){
+                                                                distance=0;
+                                                              }
+                                                              distance *=2;
+                                                              double volume = (distance * 60 )/ 100;
+                                                              volume/=100;
+                                                              if(volume>1){
+                                                                volume = 1;
+                                                              }else if (volume<0){
+                                                                volume = 0;
+                                                              }
+                                                              controller.setVolume(volume);
                                                             },
                                                             child: ConstrainedBox(
                                                               constraints:const BoxConstraints(
@@ -646,7 +657,15 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
   }
 
   void _updateVolumeBy(double factor, Offset localPosition, VideoPlayerValue value) {
-    _onClick((){});
+    if(
+    lastDateTime ==null ||
+        DateTime.now()
+            .difference(
+            lastDateTime!
+        ).inSeconds >= 4
+    ){
+      _onClick();
+    }
     double inSeconds = localPosition.distance /
         factor ;
     int seconds;
@@ -663,10 +682,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
       seconds = inSeconds.toInt();
     }
 
-
     final Duration seekTo = Duration(seconds:seconds);
     controller
-        .playerController
         .seekTo(seekTo);
   }
 
