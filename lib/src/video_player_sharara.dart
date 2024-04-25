@@ -1,7 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
 
@@ -18,7 +16,7 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.autoInitialize = true,
     this.convexMirror = false,
     this.autoLoop = false,
-    this.bottomActionsBarSize = 35,
+    this.bottomActionsBarSize = 28,
   });
 
   /// auto buffering the video
@@ -86,7 +84,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
     super.dispose();
   }
 
-  double get bottomHeight => widget.bottomActionsBarHeight??80;
+  double get bottomHeight => widget.bottomActionsBarHeight??70;
   DateTime? lastDateTime;
 
   _onClick([final Function()? callBack]){
