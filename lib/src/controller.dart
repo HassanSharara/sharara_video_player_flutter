@@ -146,6 +146,11 @@ extension PlayPause on ShararaVideoPlayerController {
 
   _stateChecker(Function() callBack){
     if(isDisposed)return;
-    callBack();
+    WidgetsBinding
+    .instance
+    .addPostFrameCallback((_)async{
+      Future.delayed(const Duration(milliseconds:25));
+      callBack();
+    });
   }
 }
