@@ -59,7 +59,7 @@ extension PlayPause on ShararaVideoPlayerController {
   void toggle()async{
     if(playerController.value.isCompleted){
       await playerController.seekTo(const Duration());
-      playerController.play();
+      play();
       return;
     }
     if(playerController.value.isPlaying){
