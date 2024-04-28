@@ -71,6 +71,7 @@ extension PlayPause on ShararaVideoPlayerController {
 
   /// playing the video
   void play(){
+    if(playerController.value.isPlaying)return;
     _stateChecker(() async{
       playerController.play();
     });
@@ -78,6 +79,7 @@ extension PlayPause on ShararaVideoPlayerController {
 
   /// pause the video
   void pause(){
+    if(!playerController.value.isPlaying)return;
     _stateChecker(() {
       playerController.pause();
     });
