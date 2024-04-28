@@ -90,7 +90,11 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
   @override
   void dispose() {
     if(!widget.convexMirror){
-      controller.pause();
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) {
+            Future.delayed(const Duration(milliseconds:100))
+                .then((value) => controller.pause());
+      });
     }
     super.dispose();
   }
