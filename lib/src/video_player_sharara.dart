@@ -14,6 +14,7 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.onNavigate,
     this.width,
     this.autoInitialize = true,
+    this.applyOrientationsEnforcement = true,
     this.convexMirror = false,
     this.autoLoop = false,
     this.showTopVolumeController = true,
@@ -24,6 +25,10 @@ class ShararaVideoPlayer extends StatefulWidget {
 
   /// auto buffering the video
   final bool autoInitialize ;
+
+  /// this option will force the view port and the Preferred Orientations to be the same as the video Orientations
+  final bool applyOrientationsEnforcement ;
+
   /// auto looping the video
   final bool autoLoop ;
   /// define the controller which manage video playing
@@ -370,7 +375,10 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                 isFullScreen = true;
                                                               });
 
-                                                              final Widget child =   FullScreenMode(controller:controller,
+                                                              final Widget child =   FullScreenMode(
+
+                                                                controller:controller,
+                                                                applyOrientationsEnforcement:widget.applyOrientationsEnforcement,
                                                                 onDispose:(){
                                                                   Future.delayed(const Duration(
                                                                       milliseconds:100
@@ -398,6 +406,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               );
                                                             },
                                                             child: Icon(
+                                                              widget.convexMirror?
+                                                              Icons.fullscreen_exit:
                                                               Icons.fullscreen,
                                                               color:bottomActionsBarColor,
                                                               size:widget.bottomActionsBarSize,
@@ -829,24 +839,42 @@ class FullScreenMode extends StatefulWidget {
   required this.controller,
   this.fullScreenVideoPlayerMirror,
   this.onDispose,
+  this.applyOrientationsEnforcement = true,
   });
   final Function()? onDispose;
   final ShararaVideoPlayerController controller;
   final VideoPlayer? fullScreenVideoPlayerMirror;
+  final bool applyOrientationsEnforcement;
   @override
   State<FullScreenMode> createState() => _FullScreenModeState();
 }
 
 class _FullScreenModeState extends State<FullScreenMode> {
   ShararaVideoPlayerController get controller => widget.controller;
+  late final bool isPortraitVideo;
   @override
   void initState() {
+    isPortraitVideo = controller.playerController.value.size.height >
+     controller.playerController.value.size.width;
     controller.isFullScreen = true;
     SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.portraitUp,
+      if(!widget.applyOrientationsEnforcement)...[
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.portraitUp,
+      ]
+      else
+      if ( isPortraitVideo )...[
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.portraitUp,
+      ]
+      else ... [
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ],
+
+
     ]);
     super.initState();
   }
