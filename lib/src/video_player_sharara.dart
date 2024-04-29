@@ -845,6 +845,8 @@ class _FullScreenModeState extends State<FullScreenMode> {
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.landscapeRight,
       DeviceOrientation.landscapeLeft,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.portraitUp,
     ]);
     super.initState();
   }
