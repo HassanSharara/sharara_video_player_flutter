@@ -17,6 +17,7 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.convexMirror = false,
     this.autoLoop = false,
     this.showTopVolumeController = true,
+    this.autoPauseAfterDispose = true,
     this.bottomActionsBarSize = 28,
     this.bigIconsSize = 40,
   });
@@ -44,6 +45,11 @@ class ShararaVideoPlayer extends StatefulWidget {
   /// notice That you need to scale [bottomActionsBarSize] with it to Fit Layout
   final double bottomActionsBarSize;
 
+  /// when widget that hold sharara video player
+  /// dispose , the player controller will automatically pause the video
+  ///
+  /// set to false if you do not want that
+  final bool autoPauseAfterDispose;
   /// set the Size of Big Icons
   final double bigIconsSize;
 
@@ -89,12 +95,12 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   @override
   void dispose() {
-    if(!widget.convexMirror){
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) {
-            Future.delayed(const Duration(milliseconds:100))
-                .then((value) => controller.pause());
-      });
+    if(!widget.convexMirror && widget.autoPauseAfterDispose){
+        WidgetsBinding.instance
+            .addPostFrameCallback((_) {
+          Future.delayed(const Duration(milliseconds:100))
+              .then((value) => controller.pause());
+        });
     }
     super.dispose();
   }
