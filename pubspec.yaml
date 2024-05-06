@@ -1,6 +1,6 @@
 name: sharara_video_player
 description: "A new Sharara package project for Better Performance and Easy Use."
-version: 0.2.2
+version: 0.2.3
 homepage: https://github.com/HassanSharara
 repository: https://github.com/HassanSharara/sharara_video_player_flutter
 
@@ -61,3 +61,4 @@ flutter:
   #
   # For details regarding fonts in packages, see
   # https://flutter.dev/custom-fonts/#from-packages
+license: MIT

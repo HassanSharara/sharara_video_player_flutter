@@ -19,9 +19,12 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.autoLoop = false,
     this.showTopVolumeController = true,
     this.autoPauseAfterDispose = true,
+    this.showViewModes = false,
+    this.showViewModesOnlyWithFullScreen = true,
     this.bottomActionsBarSize = 28,
     this.bigIconsSize = 40,
   });
+
 
   /// auto buffering the video
   final bool autoInitialize ;
@@ -31,6 +34,11 @@ class ShararaVideoPlayer extends StatefulWidget {
 
   /// auto looping the video
   final bool autoLoop ;
+  /// options about how to view video
+  final bool showViewModes ;
+
+  /// show view mode only when screen is full
+  final bool showViewModesOnlyWithFullScreen ;
   /// define the controller which manage video playing
   final ShararaVideoPlayerController controller;
 
@@ -55,6 +63,8 @@ class ShararaVideoPlayer extends StatefulWidget {
   ///
   /// set to false if you do not want that
   final bool autoPauseAfterDispose;
+
+
   /// set the Size of Big Icons
   final double bigIconsSize;
 
@@ -74,8 +84,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   bool decreasingLoopTrigger = false;
 
-     ValueNotifier<double> get bottomPosition => controller.bottomPosition;
-    ShararaVideoPlayerController get controller => widget.controller;
+  ValueNotifier<double> get bottomPosition => controller.bottomPosition;
+  ShararaVideoPlayerController get controller => widget.controller;
   Color get bottomActionsBarColor =>(widget.bottomActionsBarColor ??  Colors.white);
   Color get bottomActionsBarBackgroundColor =>(widget.bottomActionsBarBackgroundColor ??  Colors.black.withOpacity(0.5));
   bool isFullScreen = false;
@@ -183,15 +193,30 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                             if(isFullScreen)
                               const SizedBox()
                             else
-                              Center(
-                                child: AspectRatio(
-                                  aspectRatio:widget.controller.playerController.value
-                                  .aspectRatio,
+                              ValueListenableBuilder(valueListenable:controller.viewMode,
                                   child:VideoPlayer(
                                       widget.controller.playerController
                                   ),
-                                ),
-                              ),
+                                  builder:(BuildContext context,viewMode,final Widget? playerWidget){
+                                if(viewMode==null){
+                                  return Center(
+                                    child: AspectRatio(
+                                      aspectRatio:widget.controller.playerController.value
+                                          .aspectRatio,
+                                      child:playerWidget!,
+                                    ),
+                                  );
+                                }
+
+                                if(viewMode.aspectRatio==null){
+                                  return playerWidget!;
+                                }
+
+                                 return AspectRatio(
+                                   aspectRatio:viewMode.aspectRatio!,
+                                   child:playerWidget,
+                                  );
+                             }),
 
                             ValueListenableBuilder(
                                 valueListenable:bottomPosition,
@@ -303,6 +328,57 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                           mainAxisAlignment:MainAxisAlignment.end,
                                                           crossAxisAlignment:CrossAxisAlignment.center,
                                                           children: [
+
+                                                            if(
+                                                              ( widget.showViewModes &&
+                                                               !widget.showViewModesOnlyWithFullScreen)
+                                                            || widget.showViewModes && widget.convexMirror
+                                                             )
+                                                            PopupMenuButton<ViewModeDimensions?>(
+                                                              onSelected:(ViewModeDimensions? dimension){
+                                                                controller.setDimension(dimension);
+                                                              },
+                                                              itemBuilder: (BuildContext context) =>[
+                                                                 PopupMenuItem(
+                                                                  onTap:()=>controller.setDimension(null),
+                                                                  value:null,child:const Text("Normal"),),
+                                                                ... controller.dimensions
+                                                                .map((e) =>
+                                                                 PopupMenuItem(
+                                                                     value:e,
+                                                                     child:e.icon ?? Text(e.hint??""),
+                                                                 )
+                                                                )
+                                                              ],
+                                                              child: ValueListenableBuilder(
+                                                                valueListenable:controller.viewMode,
+                                                                builder:(BuildContext context,viewMode,_){
+                                                                  return Container(
+                                                                    margin:const EdgeInsets.symmetric(
+                                                                      horizontal:8.0
+                                                                    ),
+                                                                    constraints:const BoxConstraints(
+                                                                      maxWidth:50,
+                                                                      maxHeight:50
+                                                                    ),
+                                                                    child:
+                                                                    FittedBox(
+                                                                      fit:BoxFit.fill,
+                                                                      child:viewMode==null?
+                                                                      Text("NORMAL",style:TextStyle(
+                                                                          color:bottomActionsBarColor
+                                                                      ),):
+                                                                      viewMode.icon??
+                                                                          Text(viewMode.hint??"",
+                                                                            style:TextStyle(
+                                                                                color:bottomActionsBarColor
+                                                                            ),
+                                                                          )
+                                                                    )
+                                                                  );
+                                                                },
+                                                              ),
+                                                            ),
                                                             const SizedBox(width:5,),
                                                             GestureDetector(
                                                               onHorizontalDragUpdate:(details){
@@ -353,9 +429,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                 ),
                                                               ),
                                                             ),
-
                                                             const SizedBox(width:6,),
-
                                                             if(value.volume==0)
                                                               InkWell(
                                                                 onTap:()=>_onClick(controller.deMute),
@@ -519,8 +593,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                     Icon(Icons.volume_up_outlined,
                                                       color:bottomActionsBarColor
                                                           .withOpacity(0.4),
-                                                      size:widget.bigIconsSize
-                                                          -5 ,
+                                                      size:widget.bigIconsSize-5,
                                                     ),
                                                     const SizedBox(height:5,),
                                                     Text((value.volume*100).toStringAsFixed(0),

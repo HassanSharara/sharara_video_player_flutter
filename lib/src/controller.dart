@@ -7,24 +7,34 @@ import 'package:video_player/video_player.dart';
 
 class ShararaVideoPlayerController {
 
+  final List<ViewModeDimensions> dimensions = [
+    ...ViewModeDimensions.defaultDimensions
+  ];
+  static ViewModeDimensions? _dimension;
+  late final ValueNotifier<ViewModeDimensions?> viewMode;
   /// VideoPlayerController .....
   final VideoPlayerController playerController;
   ShararaVideoPlayerController({
     required this.playerController
-   });
+   }){
+    viewMode = ValueNotifier(_dimension);
+  }
+
   factory ShararaVideoPlayerController.networkUrl(final Uri uri){
     return ShararaVideoPlayerController(playerController: VideoPlayerController.networkUrl(uri));
   }
+
   factory ShararaVideoPlayerController.contentUri(final Uri uri){
     return ShararaVideoPlayerController(playerController: VideoPlayerController.contentUri(uri));
   }
+
   factory ShararaVideoPlayerController.asset(final String asset){
     return ShararaVideoPlayerController(playerController: VideoPlayerController.asset(asset));
   }
+
   factory ShararaVideoPlayerController.file(final File file){
     return ShararaVideoPlayerController(playerController: VideoPlayerController.file(file));
   }
-
 
    bool isFullScreen = false;
    bool isDisposed = false;
@@ -38,11 +48,23 @@ class ShararaVideoPlayerController {
      Future.delayed(const Duration(seconds:4))
      .then((value) {
        bottomPosition.dispose();
+       viewMode.dispose();
      });
    }
 }
 
 
+extension UiWorker on ShararaVideoPlayerController {
+  /// setting default dimension before initializing controller
+  setDefaultDimension(ViewModeDimensions? dimension){
+    ShararaVideoPlayerController._dimension = dimension;
+  }
+
+  setDimension(ViewModeDimensions? dimension){
+    setDefaultDimension(dimension);
+    viewMode.value = dimension;
+  }
+}
 extension PlayPause on ShararaVideoPlayerController {
 
   initialize()async{
@@ -157,4 +179,27 @@ extension PlayPause on ShararaVideoPlayerController {
     Future.delayed(const Duration(milliseconds:40));
     callBack();
   }
+}
+
+
+class ViewModeDimensions {
+  final Widget? icon;
+  final String? hint;
+  final double? aspectRatio;
+  const ViewModeDimensions._({
+    this.icon,
+    this.hint,
+    required this.aspectRatio});
+  static const ViewModeDimensions fitScreen =     ViewModeDimensions._(hint:"FS", aspectRatio: null);
+  static const ViewModeDimensions cri =     ViewModeDimensions._(hint: "CRI", aspectRatio: 1);
+  static const ViewModeDimensions oneTo3 =     ViewModeDimensions._(hint: "1:3", aspectRatio: 1/3);
+  static const ViewModeDimensions threeTo2 =     ViewModeDimensions._(hint: "3:2", aspectRatio: 3/2);
+  static const ViewModeDimensions oneTo1 =     ViewModeDimensions._(hint: "1:1", aspectRatio: 1/1);
+  static const List<ViewModeDimensions> defaultDimensions = [
+    fitScreen,
+    cri,
+    oneTo3,
+    threeTo2,
+    oneTo1,
+  ];
 }
