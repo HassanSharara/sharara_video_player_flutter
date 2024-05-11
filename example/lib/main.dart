@@ -34,7 +34,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   void initState() {
     controller = ShararaVideoPlayerController(playerController:
      VideoPlayerController.networkUrl(Uri.parse(
-       "[your_custom_url]"
+       "your_custom_url"
      ))
     );
    controller.playerController.pause();

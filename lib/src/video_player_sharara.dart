@@ -86,8 +86,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   ValueNotifier<double> get bottomPosition => controller.bottomPosition;
   ShararaVideoPlayerController get controller => widget.controller;
-  Color get bottomActionsBarColor =>(widget.bottomActionsBarColor ??  Colors.white);
-  Color get bottomActionsBarBackgroundColor =>(widget.bottomActionsBarBackgroundColor ??  Colors.black.withOpacity(0.5));
+  Color get bottomActionsBarColor => (widget.bottomActionsBarColor ??  Colors.white);
+  Color get bottomActionsBarBackgroundColor => (widget.bottomActionsBarBackgroundColor ??  Colors.black.withOpacity(0.5));
   bool isFullScreen = false;
 
   @override
@@ -125,18 +125,15 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   _onClick([final Function()? callBack]){
     if(controller.isDisposed)return;
+    final int dif = this.dif;
     if ( lastDateTime!=null && callBack==null){
-      final int dif = DateTime.now().difference(lastDateTime!).inSeconds;
       if(
-      dif < 3 && dif>0  ){
+      dif < 5 && dif>=0  ){
         _closeControls();
-        if(callBack!=null){
-         callBack();
-        }
+        lastDateTime = DateTime.now().subtract(const Duration(seconds:6));
         return;
       }
     }
-
     lastDateTime = DateTime.now();
     if(bottomPosition.value!=0){
       bottomPosition.value = 0;
@@ -146,13 +143,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
       callBack();
     }
   }
+
+  int get dif => DateTime.now()
+      .difference(lastDateTime??DateTime.now()).inSeconds;
+  bool get needToHide =>  dif >= 4;
   _autoHideMicroWorker()async{
     await Future.delayed(const Duration(seconds:4));
-    final int difference =   DateTime.now()
-        .difference(lastDateTime!).inSeconds;
     if(
-        lastDateTime!=null &&
-            difference== 4
+    needToHide
          ){
       _closeControls();
     }
@@ -231,7 +229,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                         child:widget.actionBuilder!=null?
                                         widget.actionBuilder!(context,value)
                                             :Padding(
-                                          padding: const EdgeInsets.all(8.0),
+                                          padding: const EdgeInsets.all(4.0),
                                           child: Column(
                                             mainAxisAlignment:MainAxisAlignment.center,
                                             crossAxisAlignment:CrossAxisAlignment.center,
@@ -242,54 +240,31 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                     child: LayoutBuilder(
                                                       builder:(c,BoxConstraints layout){
                                                         if(
+                                                        !value.isInitialized ||
                                                         layout.containsNan
                                                         )return const SizedBox();
                                                         double currentWidgetWidth = layout.maxWidth;
-                                                        final double factor = (currentWidgetWidth/value.duration.inSeconds.toDouble()
-                                                        ).toDouble();
-                                                        double  microWidth =
-                                                            factor
-                                                                *value.position.inSeconds;
-                                                        if(microWidth.isNaN){
-                                                          microWidth = 0;
-                                                        }
-                                                        return GestureDetector(
-
-                                                          onHorizontalDragUpdate:(DragUpdateDetails details){
-                                                           _updateVolumeBy(
-                                                             factor,
-                                                             details.localPosition,
-                                                             value
-                                                           );
-                                                          },
-                                                          child: Stack(
-                                                            children: [
-
-                                                              Container(
-                                                                height:8,
-                                                                width:currentWidgetWidth,
-                                                                decoration:BoxDecoration(
-                                                                    borderRadius:BorderRadius.circular(15),
-                                                                    color:Colors.grey.withOpacity(0.8)
-                                                                ),
-                                                              ),
-
-                                                              Container(
-                                                                height:8,
-                                                                width:microWidth,
-                                                                constraints:BoxConstraints(
-                                                                    minWidth:0,
-                                                                    maxWidth:microWidth,
-                                                                    minHeight:0,
-                                                                    maxHeight:8
-                                                                ),
-                                                                decoration:BoxDecoration(
-                                                                    borderRadius:BorderRadius.circular(15),
-                                                                    color:Colors.white
-                                                                ),
-                                                              ),
-
-                                                            ],
+                                                        print("max width is ${currentWidgetWidth}");
+                                                        if (currentWidgetWidth.isNaN)return const SizedBox();
+                                                        return SizedBox(
+                                                          height:8,
+                                                          width:currentWidgetWidth,
+                                                          child: SliderTheme(
+                                                            data:SliderThemeData(
+                                                                trackHeight:5,
+                                                                overlayShape:SliderComponentShape.noThumb),
+                                                            child: Slider(
+                                                                value:value.progressPercentage,
+                                                                onChanged:(final double factor){
+                                                                  _updateProgressTo(factor,value);
+                                                                },
+                                                                thumbColor:Colors.white.withOpacity(0.0),
+                                                                max:100,
+                                                                min:0,
+                                                                inactiveColor:bottomActionsBarColor
+                                                                .withOpacity(0.2),
+                                                                activeColor:bottomActionsBarColor,
+                                                            ),
                                                           ),
                                                         );
                                                       },
@@ -380,52 +355,25 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             ),
                                                             const SizedBox(width:5,),
-                                                            GestureDetector(
-                                                              onHorizontalDragUpdate:(details){
-                                                                _extendLastDateTimeForDisableHiding();
-                                                                double distance
-                                                                = (details.localPosition.distance);
-                                                                if(details.localPosition.direction>1){
-                                                                  distance-=10;
-                                                                }
-                                                                if(details.localPosition.direction>=2){
-                                                                  distance=0;
-                                                                }
-                                                                distance *=2;
-                                                                double volume = (distance * 60 )/ 100;
-                                                                volume/=100;
-                                                                if(volume>1){
-                                                                  volume = 1;
-                                                                }else if (volume<0){
-                                                                  volume = 0;
-                                                                }
-                                                                controller.setVolume(volume);
-                                                              },
-                                                              child: ConstrainedBox(
-                                                                constraints:const BoxConstraints(
-                                                                    maxWidth:60
-                                                                ),
+                                                            ConstrainedBox(
+                                                              constraints:const BoxConstraints(
+                                                                  maxWidth:80
+                                                              ),
+                                                              child:SliderTheme(
+                                                                data:SliderThemeData(
+                                                                    trackHeight:1,
+                                                                    overlayShape: SliderComponentShape.noOverlay),
 
-                                                                child: Column(
-                                                                  mainAxisAlignment:MainAxisAlignment.spaceBetween,
-                                                                  children: [
-                                                                     Expanded(
-                                                                       child: Container(
-                                                                       color:Colors.transparent,
-                                                                                                                                         ),
-                                                                     ),
-                                                                    LinearProgressIndicator(
-                                                                      value:value.volume,
-                                                                      color:bottomActionsBarColor,
-                                                                      backgroundColor:bottomActionsBarBackgroundColor
-                                                                          .withOpacity(0.6),
-                                                                    ),
-                                                                    Expanded(
-                                                                      child: Container(
-                                                                        color:Colors.transparent,
-                                                                      ),
-                                                                    ),
-                                                                  ],
+                                                                child:Slider(
+                                                                  min: 0,
+                                                                  max: 1,
+                                                                  onChanged:(v){
+                                                                    _extendLastDateTimeForDisableHiding();
+                                                                    controller.setVolume(v);
+                                                                  },
+                                                                  activeColor:bottomActionsBarColor,
+                                                                  thumbColor:bottomActionsBarColor.withOpacity(0.4),
+                                                                  value:value.volume,
                                                                 ),
                                                               ),
                                                             ),
@@ -748,25 +696,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
       _autoHideMicroWorker();
     }
   }
-  void _updateVolumeBy(double factor, Offset localPosition, VideoPlayerValue value) {
+  void _updateProgressTo(final double factor,final VideoPlayerValue value) {
     _extendLastDateTimeForDisableHiding();
-    double inSeconds = localPosition.distance /
-        factor ;
-    int seconds;
-
-    if(
-    inSeconds>=value.duration.inSeconds
-    ){
-      seconds = value.duration.inSeconds;
-    }
-    else if(inSeconds<0){
-      seconds = 0;
-    }
-    else{
-      seconds = inSeconds.toInt();
-    }
-
-    final Duration seekTo = Duration(seconds:seconds);
+    final Duration seekTo = Duration(seconds:value.duration.inSeconds * factor~/100);
     controller
         .seekTo(seekTo);
   }
@@ -798,6 +730,17 @@ extension ToString on Duration {
       hours++;
     }
     return "$hours:$minutes:$seconds";
+  }
+}
+
+
+extension PercentageCalculator on VideoPlayerValue {
+  double get progressPercentage {
+  final double res = position.inSeconds * 100 /
+        duration.inSeconds;
+  if ( res >= 100 )return 100;
+  if ( res <= 0 )return 0;
+  return res;
   }
 }
 
