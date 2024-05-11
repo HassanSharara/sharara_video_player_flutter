@@ -358,38 +358,47 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             ),
                                                             const SizedBox(width:5,),
-                                                            LayoutBuilder(
-                                                              builder: (context,constraints) {
-                                                               if ( constraints.containsNan )return const SizedBox();
-                                                               final double width = constraints
-                                                               .maxWidth >= 80 ?
-                                                               80:
-                                                               constraints.maxWidth;
-                                                               return SizedBox(
-                                                                 width:width,
-                                                                 child: SliderTheme(
-                                                                   data:SliderThemeData(
-                                                                       trackHeight:1,
-                                                                       thumbShape: const RoundSliderThumbShape(
-                                                                         enabledThumbRadius: 6.0, // Adjust the size as needed
+                                                            Expanded(
+                                                              child: LayoutBuilder(
+                                                                builder: (context,constraints) {
+                                                                 if ( constraints.containsNan )return const SizedBox();
+                                                                 final double width = (constraints
+                                                                 .maxWidth / 1 ) >= 80 ?
+                                                                 80:
+                                                                 constraints.maxWidth;
+                                                                 return Row(
+                                                                   mainAxisAlignment:MainAxisAlignment.end,
+                                                                   children: [
+                                                                     Flexible(
+                                                                       child: SizedBox(
+                                                                         width:width,
+                                                                         child: SliderTheme(
+                                                                           data:SliderThemeData(
+                                                                               trackHeight:1,
+                                                                               thumbShape: const RoundSliderThumbShape(
+                                                                                 enabledThumbRadius: 6.0, // Adjust the size as needed
+                                                                               ),
+                                                                               overlayShape: SliderComponentShape.noOverlay),
+                                                                           child:Slider(
+                                                                             min: 0,
+                                                                             max: 1,
+                                                                             onChanged:(v){
+                                                                               _extendLastDateTimeForDisableHiding();
+                                                                               controller.setVolume(v);
+                                                                             },
+                                                                             activeColor:bottomActionsBarColor,
+                                                                             thumbColor:bottomActionsBarColor.withOpacity(0.4),
+                                                                             inactiveColor:bottomActionsBarColor
+                                                                                 .withOpacity(0.5),
+                                                                             value:value.volume,
+                                                                           ),
+                                                                         ),
                                                                        ),
-                                                                       overlayShape: SliderComponentShape.noOverlay),
-                                                                   child:Slider(
-                                                                     min: 0,
-                                                                     max: 1,
-                                                                     onChanged:(v){
-                                                                       _extendLastDateTimeForDisableHiding();
-                                                                       controller.setVolume(v);
-                                                                     },
-                                                                     activeColor:bottomActionsBarColor,
-                                                                     thumbColor:bottomActionsBarColor.withOpacity(0.4),
-                                                                     inactiveColor:bottomActionsBarColor
-                                                                         .withOpacity(0.5),
-                                                                     value:value.volume,
-                                                                   ),
-                                                                 ),
-                                                               );
-                                                              }
+                                                                     ),
+                                                                   ],
+                                                                 );
+                                                                }
+                                                              ),
                                                             ),
                                                            SizedBox(
                                                              width:(widget.bottomActionsBarSize * 2) + 15,
@@ -510,7 +519,10 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                         mainAxisAlignment:MainAxisAlignment.start,
                                         children: [
                                           SizedBox(height:height*0.1,),
-                                          if(widget.showTopVolumeController)
+                                          if(widget.showTopVolumeController &&
+                                           mainLayoutConstraints.maxHeight >= 280 &&
+                                           mainLayoutConstraints.maxWidth >= 250
+                                          )
                                           Row(
                                             mainAxisAlignment:MainAxisAlignment.spaceAround,
                                             children: [
@@ -603,7 +615,6 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                       .increaseVolumeBy(0.01)
                                                   );
                                                 },
-                                                onLongPress:(){},
                                                 child: Icon(Icons.add_circle,
                                                   color:bottomActionsBarColor
                                                       .withOpacity(0.4),

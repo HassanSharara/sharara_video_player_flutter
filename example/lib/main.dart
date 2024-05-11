@@ -42,8 +42,14 @@ class _VideoPlayerState extends State<VideoPlayer> {
   }
   @override
   Widget build(BuildContext context) {
-    return ShararaVideoPlayer(
-      controller: controller,
+    return Center(
+      child: SizedBox(
+        width:250,
+        height:280,
+        child: ShararaVideoPlayer(
+          controller: controller,
+        ),
+      ),
     );
   }
 }
