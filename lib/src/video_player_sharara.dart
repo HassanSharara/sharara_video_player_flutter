@@ -471,7 +471,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      color:bottomActionsBarColor,
                                                                      size:widget.bottomActionsBarSize,
                                                                    ),
-                                                                 )
+                                                                 ),
+                                                                 const SizedBox(width:3,),
                                                                ],
                                                              ),
                                                            )
