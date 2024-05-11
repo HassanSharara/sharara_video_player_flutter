@@ -1,5 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
 
@@ -239,7 +241,6 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                   Expanded(
                                                     child: LayoutBuilder(
                                                       builder:(c,BoxConstraints layout){
-
                                                         if(
                                                        // !value.isInitialized ||
                                                         layout.containsNan
@@ -357,96 +358,114 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             ),
                                                             const SizedBox(width:5,),
-                                                            ConstrainedBox(
-                                                              constraints:const BoxConstraints(
-                                                                  maxWidth:80
-                                                              ),
-                                                              child:SliderTheme(
-                                                                data:SliderThemeData(
-                                                                    trackHeight:1,
-                                                                    overlayShape: SliderComponentShape.noOverlay),
-
-                                                                child:Slider(
-                                                                  min: 0,
-                                                                  max: 1,
-                                                                  onChanged:(v){
-                                                                    _extendLastDateTimeForDisableHiding();
-                                                                    controller.setVolume(v);
-                                                                  },
-                                                                  activeColor:bottomActionsBarColor,
-                                                                  thumbColor:bottomActionsBarColor.withOpacity(0.4),
-                                                                  value:value.volume,
-                                                                ),
-                                                              ),
+                                                            LayoutBuilder(
+                                                              builder: (context,constraints) {
+                                                               if ( constraints.containsNan )return const SizedBox();
+                                                               final double width = constraints
+                                                               .maxWidth >= 80 ?
+                                                               80:
+                                                               constraints.maxWidth;
+                                                               return SizedBox(
+                                                                 width:width,
+                                                                 child: SliderTheme(
+                                                                   data:SliderThemeData(
+                                                                       trackHeight:1,
+                                                                       thumbShape: const RoundSliderThumbShape(
+                                                                         enabledThumbRadius: 6.0, // Adjust the size as needed
+                                                                       ),
+                                                                       overlayShape: SliderComponentShape.noOverlay),
+                                                                   child:Slider(
+                                                                     min: 0,
+                                                                     max: 1,
+                                                                     onChanged:(v){
+                                                                       _extendLastDateTimeForDisableHiding();
+                                                                       controller.setVolume(v);
+                                                                     },
+                                                                     activeColor:bottomActionsBarColor,
+                                                                     thumbColor:bottomActionsBarColor.withOpacity(0.4),
+                                                                     inactiveColor:bottomActionsBarColor
+                                                                         .withOpacity(0.5),
+                                                                     value:value.volume,
+                                                                   ),
+                                                                 ),
+                                                               );
+                                                              }
                                                             ),
-                                                            const SizedBox(width:6,),
-                                                            if(value.volume==0)
-                                                              InkWell(
-                                                                onTap:()=>_onClick(controller.deMute),
-                                                                child: Icon(Icons.volume_off,
-                                                                  color:bottomActionsBarColor,
-                                                                  size:widget.bottomActionsBarSize,
-                                                                ),
-                                                              )
-                                                            else
-                                                              InkWell(
-                                                                onTap:()=>_onClick(controller.mute),
-                                                                child: Icon(Icons.volume_up_outlined,
-                                                                  color:bottomActionsBarColor,
-                                                                  size:widget.bottomActionsBarSize,
-                                                                ),
-                                                              ),
+                                                           SizedBox(
+                                                             width:(widget.bottomActionsBarSize * 2) + 15,
+                                                             child:Row(
+                                                               children: [
+                                                                 const SizedBox(width:6,),
+                                                                 if(value.volume==0)
+                                                                   InkWell(
+                                                                     onTap:()=>_onClick(controller.deMute),
+                                                                     child: Icon(Icons.volume_off,
+                                                                       color:bottomActionsBarColor,
+                                                                       size:widget.bottomActionsBarSize,
+                                                                     ),
+                                                                   )
+                                                                 else
+                                                                   InkWell(
+                                                                     onTap:()=>_onClick(controller.mute),
+                                                                     child: Icon(Icons.volume_up_outlined,
+                                                                       color:bottomActionsBarColor,
+                                                                       size:widget.bottomActionsBarSize,
+                                                                     ),
+                                                                   ),
 
-                                                            const SizedBox(width:8,),
-                                                            InkWell(
-                                                              onTap:()async{
+                                                                 const SizedBox(width:8,),
+                                                                 InkWell(
+                                                                   onTap:()async{
 
-                                                                if(widget.convexMirror){
-                                                                  Navigator.maybePop(context);
-                                                                  return;
-                                                                }
-                                                                setState(() {
-                                                                  isFullScreen = true;
-                                                                });
+                                                                     if(widget.convexMirror){
+                                                                       Navigator.maybePop(context);
+                                                                       return;
+                                                                     }
+                                                                     setState(() {
+                                                                       isFullScreen = true;
+                                                                     });
 
-                                                                final Widget child =   FullScreenMode(
+                                                                     final Widget child =   FullScreenMode(
 
-                                                                  controller:controller,
-                                                                  applyOrientationsEnforcement:widget.applyOrientationsEnforcement,
-                                                                  onDispose:(){
-                                                                    Future.delayed(const Duration(
-                                                                        milliseconds:100
-                                                                    )).then((value) {
-                                                                      WidgetsBinding
-                                                                          .instance
-                                                                          .addPostFrameCallback((timeStamp) {
-                                                                        setState(() {
-                                                                          isFullScreen = false;
-                                                                        });
-                                                                      });
-                                                                    });
-                                                                  },
-                                                                );
-                                                                if(widget.onNavigate!=null){
-                                                                  return widget.onNavigate!(child);
-                                                                }
+                                                                       controller:controller,
+                                                                       applyOrientationsEnforcement:widget.applyOrientationsEnforcement,
+                                                                       onDispose:(){
+                                                                         Future.delayed(const Duration(
+                                                                             milliseconds:100
+                                                                         )).then((value) {
+                                                                           WidgetsBinding
+                                                                               .instance
+                                                                               .addPostFrameCallback((timeStamp) {
+                                                                             setState(() {
+                                                                               isFullScreen = false;
+                                                                             });
+                                                                           });
+                                                                         });
+                                                                       },
+                                                                     );
+                                                                     if(widget.onNavigate!=null){
+                                                                       return widget.onNavigate!(child);
+                                                                     }
 
-                                                                Navigator
-                                                                    .push(context,
-                                                                    MaterialPageRoute(
-                                                                        builder:(_)=>
-                                                                        child
-                                                                    )
-                                                                );
-                                                              },
-                                                              child: Icon(
-                                                                widget.convexMirror?
-                                                                Icons.fullscreen_exit:
-                                                                Icons.fullscreen,
-                                                                color:bottomActionsBarColor,
-                                                                size:widget.bottomActionsBarSize,
-                                                              ),
-                                                            )
+                                                                     Navigator
+                                                                         .push(context,
+                                                                         MaterialPageRoute(
+                                                                             builder:(_)=>
+                                                                             child
+                                                                         )
+                                                                     );
+                                                                   },
+                                                                   child: Icon(
+                                                                     widget.convexMirror?
+                                                                     Icons.fullscreen_exit:
+                                                                     Icons.fullscreen,
+                                                                     color:bottomActionsBarColor,
+                                                                     size:widget.bottomActionsBarSize,
+                                                                   ),
+                                                                 )
+                                                               ],
+                                                             ),
+                                                           )
                                                           ],
                                                         ),
                                                       ),
