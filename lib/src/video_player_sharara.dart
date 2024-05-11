@@ -239,12 +239,12 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                   Expanded(
                                                     child: LayoutBuilder(
                                                       builder:(c,BoxConstraints layout){
+
                                                         if(
-                                                        !value.isInitialized ||
+                                                       // !value.isInitialized ||
                                                         layout.containsNan
                                                         )return const SizedBox();
                                                         double currentWidgetWidth = layout.maxWidth;
-                                                        print("max width is ${currentWidgetWidth}");
                                                         if (currentWidgetWidth.isNaN)return const SizedBox();
                                                         return SizedBox(
                                                           height:8,
@@ -291,7 +291,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                     [
                                                       GestureDetector(
                                                         onTap:()=>_onClick(controller.toggle),
-                                                        child:Icon(
+                                                        child:
+
+                                                        Icon(
                                                           playIcons,
                                                           color:bottomActionsBarColor,
                                                           size:widget.bottomActionsBarSize,
@@ -738,8 +740,9 @@ extension PercentageCalculator on VideoPlayerValue {
   double get progressPercentage {
   final double res = position.inSeconds * 100 /
         duration.inSeconds;
+
   if ( res >= 100 )return 100;
-  if ( res <= 0 )return 0;
+  if ( res <= 0 || res.isNaN)return 0;
   return res;
   }
 }
