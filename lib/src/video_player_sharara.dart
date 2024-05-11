@@ -472,7 +472,6 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      size:widget.bottomActionsBarSize,
                                                                    ),
                                                                  ),
-                                                                 const SizedBox(width:3,),
                                                                ],
                                                              ),
                                                            )
