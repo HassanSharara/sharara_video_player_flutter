@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:video_player/video_player.dart';
 
 class ShararaVideoPlayerController {
@@ -15,25 +14,38 @@ class ShararaVideoPlayerController {
   /// VideoPlayerController .....
   final VideoPlayerController playerController;
   ShararaVideoPlayerController({
-    required this.playerController
+    required this.playerController,
+    this.autoDisposeVideoPlayerController = false,
    }){
     viewMode = ValueNotifier(_dimension);
   }
-
+  bool autoDisposeVideoPlayerController = false ;
   factory ShararaVideoPlayerController.networkUrl(final Uri uri){
-    return ShararaVideoPlayerController(playerController: VideoPlayerController.networkUrl(uri));
+    return ShararaVideoPlayerController(
+        playerController: VideoPlayerController.networkUrl(uri),
+        autoDisposeVideoPlayerController:true
+    );
   }
 
   factory ShararaVideoPlayerController.contentUri(final Uri uri){
-    return ShararaVideoPlayerController(playerController: VideoPlayerController.contentUri(uri));
+    return ShararaVideoPlayerController(
+        playerController: VideoPlayerController.contentUri(uri),
+        autoDisposeVideoPlayerController:true,
+    );
   }
 
   factory ShararaVideoPlayerController.asset(final String asset){
-    return ShararaVideoPlayerController(playerController: VideoPlayerController.asset(asset));
+    return ShararaVideoPlayerController(
+        playerController: VideoPlayerController.asset(asset),
+        autoDisposeVideoPlayerController:true
+    );
   }
 
   factory ShararaVideoPlayerController.file(final File file){
-    return ShararaVideoPlayerController(playerController: VideoPlayerController.file(file));
+    return ShararaVideoPlayerController(
+        playerController: VideoPlayerController.file(file),
+        autoDisposeVideoPlayerController:true
+    );
   }
 
    bool isFullScreen = false;
@@ -49,6 +61,9 @@ class ShararaVideoPlayerController {
      .then((value) {
        bottomPosition.dispose();
        viewMode.dispose();
+       if(autoDisposeVideoPlayerController){
+         playerController.dispose();
+       }
      });
    }
 }
@@ -195,6 +210,9 @@ class ViewModeDimensions {
   static const ViewModeDimensions oneTo3 =     ViewModeDimensions._(hint: "1:3", aspectRatio: 1/3);
   static const ViewModeDimensions threeTo2 =     ViewModeDimensions._(hint: "3:2", aspectRatio: 3/2);
   static const ViewModeDimensions oneTo1 =     ViewModeDimensions._(hint: "1:1", aspectRatio: 1/1);
+
+  static const ViewModeDimensions half =
+      ViewModeDimensions._(aspectRatio: 2/1,icon:Icon(Icons.ad_units_outlined));
   static const List<ViewModeDimensions> defaultDimensions = [
     fitScreen,
     cri,

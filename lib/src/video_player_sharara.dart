@@ -1,7 +1,5 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
 
@@ -14,8 +12,10 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.actionBuilder,
     this.height,
     this.onNavigate,
+    this.stackChildren,
     this.width,
     this.autoInitialize = true,
+    this.withPopIcon = false,
     this.applyOrientationsEnforcement = true,
     this.convexMirror = false,
     this.autoLoop = false,
@@ -24,7 +24,7 @@ class ShararaVideoPlayer extends StatefulWidget {
     this.showViewModes = false,
     this.showViewModesOnlyWithFullScreen = true,
     this.bottomActionsBarSize = 28,
-    this.bigIconsSize = 40,
+    this.bigIconsSize = 35,
   });
 
 
@@ -74,8 +74,12 @@ class ShararaVideoPlayer extends StatefulWidget {
   final bool convexMirror;
   /// if you want to hide the top volume controller
   final bool showTopVolumeController;
+  /// build context popper icon button to get back
+  final bool withPopIcon;
   /// set bottom Bar Actions Widgets
+  /// also you can set stack children widgets
   final Widget Function(BuildContext,VideoPlayerValue)? actionBuilder;
+  final List<Widget> Function(BuildContext,VideoPlayerValue)? stackChildren;
   @override
   State<ShararaVideoPlayer> createState() => _ShararaVideoPlayerState();
 }
@@ -518,7 +522,29 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                         mainAxisSize:MainAxisSize.max,
                                         mainAxisAlignment:MainAxisAlignment.start,
                                         children: [
-                                          SizedBox(height:height*0.1,),
+                                          const SizedBox(height:40,),
+                                          if(widget.convexMirror || (widget.withPopIcon))
+                                            Row(
+                                              mainAxisAlignment:MainAxisAlignment.start,
+                                              crossAxisAlignment:CrossAxisAlignment.start,
+
+                                              children: [
+                                                const SizedBox(width:2,),
+                                                InkWell(
+                                                  onTap:(){
+                                                    Navigator.pop(context);
+                                                  },
+                                                  borderRadius:BorderRadius.circular(15),
+                                                  child:const Padding(
+                                                    padding:  EdgeInsets.all(8.0),
+                                                    child:  Icon(
+                                                      Icons.arrow_back_ios_new,size:28,
+                                                      color:Colors.white,
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
                                           if(widget.showTopVolumeController &&
                                            mainLayoutConstraints.maxHeight >= 280 &&
                                            mainLayoutConstraints.maxWidth >= 250
@@ -558,7 +584,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                   );
                                                 },
                                                 child: Icon(Icons.remove_circle,
-                                                  color:bottomActionsBarColor.withOpacity(0.6),
+                                                  color:bottomActionsBarColor.withOpacity(0.2),
                                                   size:widget.bigIconsSize,
                                                 ),
                                               ),
@@ -617,7 +643,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 },
                                                 child: Icon(Icons.add_circle,
                                                   color:bottomActionsBarColor
-                                                      .withOpacity(0.4),
+                                                      .withOpacity(0.2),
                                                   size:widget.bigIconsSize-5,
                                                 ),
                                               ),
@@ -695,8 +721,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                     }
                                 ),
                               ],
-                            )
-
+                            ),
+                            if(widget.stackChildren!=null)
+                              ...widget.stackChildren!(context,value)
                           ],
                         );
                       }
