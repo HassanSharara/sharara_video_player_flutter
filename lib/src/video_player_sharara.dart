@@ -434,6 +434,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                        Navigator.maybePop(context);
                                                                        return;
                                                                      }
+                                                                     if(!mounted)return;
                                                                      setState(() {
                                                                        isFullScreen = true;
                                                                      });
@@ -449,6 +450,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                            WidgetsBinding
                                                                                .instance
                                                                                .addPostFrameCallback((timeStamp) {
+                                                                             if(!mounted)return;
                                                                              setState(() {
                                                                                isFullScreen = false;
                                                                              });
@@ -532,7 +534,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 const SizedBox(width:2,),
                                                 InkWell(
                                                   onTap:(){
-                                                    Navigator.pop(context);
+                                                    Navigator.maybePop(context);
                                                   },
                                                   borderRadius:BorderRadius.circular(15),
                                                   child:const Padding(
@@ -826,10 +828,12 @@ class _LeftAceClickerState extends State<LeftAceClicker> {
   void _trigger()async{
     if(widget.onCall==null)return;
     widget.onCall!();
+    if(!mounted)return;
     setState(() {
       triggered = true;
     });
     await Future.delayed(const Duration(milliseconds:300));
+    if(!mounted)return;
     setState(() {
       triggered = false;
     });
@@ -883,10 +887,12 @@ class _RightAceClickerState extends State<RightAceClicker> {
   void _trigger()async{
    if(widget.onCall==null)return;
    widget.onCall!();
+   if(!mounted)return;
    setState(() {
    triggered = true;
    });
   await Future.delayed(const Duration(milliseconds:300));
+   if(!mounted)return;
    setState(() {
     triggered = false;
    });
