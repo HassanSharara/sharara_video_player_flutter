@@ -69,9 +69,7 @@ class _VideoPlayerState extends State<VideoPlayer> {
   late final ShararaVideoPlayerController controller;
   @override
   void initState() {
-    controller = ShararaVideoPlayerController(playerController:  VideoPlayerController
-        .networkUrl(Uri.parse("your_custom_url")));
-    controller.playerController.pause();
+    controller = ShararaVideoPlayerController.networkUrl(Uri.parse("your_custom_url"));
     super.initState();
   }
   @override

@@ -1,3 +1,3 @@
-## 0.0.1
+## 1.0.14
 
-* TODO: Describe initial release.
+* Update to the last version for better performance and options
