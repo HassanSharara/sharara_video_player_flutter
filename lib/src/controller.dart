@@ -12,38 +12,44 @@ class ShararaVideoPlayerController {
   static ViewModeDimensions? _dimension;
   late final ValueNotifier<ViewModeDimensions?> viewMode;
   /// VideoPlayerController .....
-  final VideoPlayerController playerController;
+  late  VideoPlayerController playerController;
+  late final VideoPlayerController Function() _buildClass;
+  Function()? _refreshUiCallback;
   ShararaVideoPlayerController({
-    required this.playerController,
+   required VideoPlayerController Function() videoControllerBuilder,
     this.autoDisposeVideoPlayerController = false,
    }){
     viewMode = ValueNotifier(_dimension);
+    _buildClass = videoControllerBuilder;
+    playerController = _buildClass();
   }
   bool autoDisposeVideoPlayerController = false ;
   factory ShararaVideoPlayerController.networkUrl(final Uri uri){
     return ShararaVideoPlayerController(
-        playerController: VideoPlayerController.networkUrl(uri),
+        videoControllerBuilder: () => VideoPlayerController.networkUrl(uri),
         autoDisposeVideoPlayerController:true
     );
   }
 
   factory ShararaVideoPlayerController.contentUri(final Uri uri){
+
+
     return ShararaVideoPlayerController(
-        playerController: VideoPlayerController.contentUri(uri),
-        autoDisposeVideoPlayerController:true,
+      videoControllerBuilder:()=>VideoPlayerController.contentUri(uri) ,
+      autoDisposeVideoPlayerController:true,
     );
   }
 
   factory ShararaVideoPlayerController.asset(final String asset){
     return ShararaVideoPlayerController(
-        playerController: VideoPlayerController.asset(asset),
+        videoControllerBuilder:()=> VideoPlayerController.asset(asset),
         autoDisposeVideoPlayerController:true
     );
   }
 
   factory ShararaVideoPlayerController.file(final File file){
     return ShararaVideoPlayerController(
-        playerController: VideoPlayerController.file(file),
+        videoControllerBuilder:()=> VideoPlayerController.file(file),
         autoDisposeVideoPlayerController:true
     );
   }
@@ -66,6 +72,8 @@ class ShararaVideoPlayerController {
        }
      });
    }
+
+
 }
 
 
@@ -196,6 +204,21 @@ extension PlayPause on ShararaVideoPlayerController {
   }
 }
 
+extension Rebuilder on ShararaVideoPlayerController {
+   void rebuildInternalPlayerController(){
+     final c = playerController;
+     playerController = _buildClass();
+     if(_refreshUiCallback!=null)_refreshUiCallback!();
+     Future.delayed(const Duration(seconds:3)).then((_)=>c.dispose());
+   }
+}
+
+extension PrivateImplements on ShararaVideoPlayerController {
+
+   setRefreshUiCallback(Function() cb){
+     _refreshUiCallback = cb;
+   }
+}
 
 class ViewModeDimensions {
   final Widget? icon;
@@ -221,3 +244,4 @@ class ViewModeDimensions {
     oneTo1,
   ];
 }
+

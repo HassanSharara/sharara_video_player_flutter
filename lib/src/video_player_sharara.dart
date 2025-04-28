@@ -1,90 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sharara_video_player/src/controller.dart';
 import 'package:sharara_video_player/video_player_sharara.dart';
 import 'package:video_player/video_player.dart';
 
-class ShararaVideoPlayer extends StatefulWidget {
-  const ShararaVideoPlayer({super.key,
+ class ShararaVideoPlayer extends StatefulWidget {
+   const ShararaVideoPlayer({super.key,
+     required this.controller,
+     this.options = const Options()
+   });
+   /// specifying options of video controller
+   final Options options;
+   /// define the controller which manage video playing
+   final ShararaVideoPlayerController controller;
+   @override
+   State<ShararaVideoPlayer> createState() => __ShararaVideoPlayerState();
+ }
+  final class _PlayerStateManagement {
+     final ValueNotifier<Widget> notifier;
+     _PlayerStateManagement(this.notifier);
+  }
+ class __ShararaVideoPlayerState extends State<ShararaVideoPlayer> {
+   late final _PlayerStateManagement stateManagement;
+
+   _reloadCallback(){
+     if( !mounted)return;
+     stateManagement.notifier.value = _ShararaVideoPlayer(
+       key:UniqueKey(),
+       controller:widget.controller,
+       options:widget.options,
+     );
+   }
+   @override
+  void initState() {
+     widget.controller.setRefreshUiCallback(_reloadCallback);
+    stateManagement = _PlayerStateManagement(ValueNotifier(
+      _ShararaVideoPlayer(
+        controller:widget.controller,
+        options:widget.options,
+      )
+    ));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+     super.dispose();
+     Future.delayed(const Duration(seconds:4)).then((_)=>stateManagement.notifier.dispose());
+   }
+   @override
+   Widget build(BuildContext context) {
+     return ValueListenableBuilder(valueListenable: stateManagement.notifier,
+         builder:(c,v,_)=>v);
+   }
+ }
+
+
+class _ShararaVideoPlayer extends StatefulWidget {
+  const _ShararaVideoPlayer({super.key,
    required this.controller,
-    this.bottomActionsBarHeight,
-    this.bottomActionsBarColor,
-    this.bottomActionsBarBackgroundColor,
-    this.actionBuilder,
-    this.height,
-    this.onNavigate,
-    this.stackChildren,
-    this.width,
-    this.autoInitialize = true,
-    this.withPopIcon = false,
-    this.applyOrientationsEnforcement = true,
-    this.convexMirror = false,
-    this.autoLoop = false,
-    this.showTopVolumeController = true,
-    this.autoPauseAfterDispose = true,
-    this.showViewModes = false,
-    this.showViewModesOnlyWithFullScreen = true,
-    this.bottomActionsBarSize = 28,
-    this.bigIconsSize = 35,
+    this.options = const Options(),
   });
-
-
-  /// auto buffering the video
-  final bool autoInitialize ;
-
-  /// this option will force the view port and the Preferred Orientations to be the same as the video Orientations
-  final bool applyOrientationsEnforcement ;
-
-  /// auto looping the video
-  final bool autoLoop ;
-  /// options about how to view video
-  final bool showViewModes ;
-
-  /// show view mode only when screen is full
-  final bool showViewModesOnlyWithFullScreen ;
+  /// specifying options of video controller
+  final Options options;
   /// define the controller which manage video playing
   final ShararaVideoPlayerController controller;
 
-  /// you can call this function if you specified custom navigator in your app
-  final Function(Widget)? onNavigate;
-  /// The Width And Height of Video Player Must Be Fit With Icons Size
-  ///
-  /// [bottomActionsBarSize]
-  final double? height,width;
-  /// sets the height of bottom actions bar
-  final double? bottomActionsBarHeight;
-  /// set the color of bottom actions bar
-  final Color? bottomActionsBarColor,bottomActionsBarBackgroundColor;
-
-  /// set the Size of bottom actions bar
-  ///
-  /// notice That you need to scale [bottomActionsBarSize] with it to Fit Layout
-  final double bottomActionsBarSize;
-
-  /// when widget that hold sharara video player
-  /// dispose , the player controller will automatically pause the video
-  ///
-  /// set to false if you do not want that
-  final bool autoPauseAfterDispose;
 
 
-  /// set the Size of Big Icons
-  final double bigIconsSize;
-
-  /// do not change this critical for change the size of video player
-  final bool convexMirror;
-  /// if you want to hide the top volume controller
-  final bool showTopVolumeController;
-  /// build context popper icon button to get back
-  final bool withPopIcon;
-  /// set bottom Bar Actions Widgets
-  /// also you can set stack children widgets
-  final Widget Function(BuildContext,VideoPlayerValue)? actionBuilder;
-  final List<Widget> Function(BuildContext,VideoPlayerValue)? stackChildren;
   @override
-  State<ShararaVideoPlayer> createState() => _ShararaVideoPlayerState();
+  State<_ShararaVideoPlayer> createState() => _ShararaVideoPlayerState();
 }
 
-class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
+class _ShararaVideoPlayerState extends State<_ShararaVideoPlayer>
   {
   bool increasingLoopTrigger = false;
 
@@ -92,16 +80,17 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   ValueNotifier<double> get bottomPosition => controller.bottomPosition;
   ShararaVideoPlayerController get controller => widget.controller;
-  Color get bottomActionsBarColor => (widget.bottomActionsBarColor ??  Colors.white);
-  Color get bottomActionsBarBackgroundColor => (widget.bottomActionsBarBackgroundColor ??  Colors.black.withOpacity(0.5));
+  Color get bottomActionsBarColor => (widget.options.bottomActionsBarColor ??  Colors.white);
+  Color get bottomActionsBarBackgroundColor => (widget.options.bottomActionsBarBackgroundColor ??  Colors.black
+      .withValues(alpha:0.5));
   bool isFullScreen = false;
 
   @override
   void initState() {
-    if(!widget.convexMirror && widget.autoInitialize){
+    if(!widget.options.convexMirror && widget.options.autoInitialize){
       controller.initialize();
     }
-    if(widget.autoLoop){
+    if(widget.options.autoLoop){
       controller.setLooping(true);
     }
     super.initState();
@@ -116,7 +105,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
   @override
   void dispose() {
-    if(!widget.convexMirror && widget.autoPauseAfterDispose){
+    if(!widget.options.convexMirror && widget.options.autoPauseAfterDispose){
         WidgetsBinding.instance
             .addPostFrameCallback((_) {
           Future.delayed(const Duration(milliseconds:100))
@@ -126,7 +115,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
     super.dispose();
   }
 
-  double get bottomHeight => widget.bottomActionsBarHeight??70;
+  double get bottomHeight => widget.options.bottomActionsBarHeight??70;
   DateTime? lastDateTime;
 
   _onClick([final Function()? callBack]){
@@ -170,8 +159,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
   Widget build(BuildContext context) {
 
     return  SizedBox(
-      height:widget.height,
-      width:widget.width,
+      height:widget.options.height,
+      width:widget.options.width,
       child: GestureDetector(
         onTap:_onClick,
         child: Scaffold(
@@ -230,10 +219,10 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                       bottom:bp,
                                       child: Container(
                                         height:bottomHeight,
-                                        width:widget.width??width,
-                                        color:bottomActionsBarBackgroundColor.withOpacity(0.3),
-                                        child:widget.actionBuilder!=null?
-                                        widget.actionBuilder!(context,value)
+                                        width:widget.options.width??width,
+                                        color:bottomActionsBarBackgroundColor.withValues(alpha:0.3),
+                                        child:widget.options.actionBuilder!=null?
+                                        widget.options.actionBuilder!(context,value)
                                             :Padding(
                                           padding: const EdgeInsets.all(4.0),
                                           child: Column(
@@ -248,8 +237,10 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                         if(
                                                        // !value.isInitialized ||
                                                         layout.containsNan
-                                                        )return const SizedBox();
-                                                        double currentWidgetWidth = layout.maxWidth;
+                                                        ) {
+                                                                return const SizedBox();
+                                                              }
+                                                              double currentWidgetWidth = layout.maxWidth;
                                                         if (currentWidgetWidth.isNaN)return const SizedBox();
                                                         return SizedBox(
                                                           height:8,
@@ -263,11 +254,11 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                 onChanged:(final double factor){
                                                                   _updateProgressTo(factor,value);
                                                                 },
-                                                                thumbColor:Colors.white.withOpacity(0.0),
+                                                                thumbColor:Colors.white.withValues(alpha:0.0),
                                                                 max:100,
                                                                 min:0,
                                                                 inactiveColor:bottomActionsBarColor
-                                                                .withOpacity(0.2),
+                                                                .withValues(alpha:0.2),
                                                                 activeColor:bottomActionsBarColor,
                                                             ),
                                                           ),
@@ -301,7 +292,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                         Icon(
                                                           playIcons,
                                                           color:bottomActionsBarColor,
-                                                          size:widget.bottomActionsBarSize,
+                                                          size:widget.options.bottomActionsBarSize,
                                                         ),
                                                       ),
 
@@ -312,9 +303,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                           children: [
 
                                                             if(
-                                                              ( widget.showViewModes &&
-                                                               !widget.showViewModesOnlyWithFullScreen)
-                                                            || widget.showViewModes && widget.convexMirror
+                                                              ( widget.options.showViewModes &&
+                                                               !widget.options.showViewModesOnlyWithFullScreen)
+                                                            || widget.options.showViewModes && widget.options.convexMirror
                                                              )
                                                             PopupMenuButton<ViewModeDimensions?>(
                                                               onSelected:(ViewModeDimensions? dimension){
@@ -391,9 +382,9 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                                controller.setVolume(v);
                                                                              },
                                                                              activeColor:bottomActionsBarColor,
-                                                                             thumbColor:bottomActionsBarColor.withOpacity(0.4),
+                                                                             thumbColor:bottomActionsBarColor.withValues(alpha:0.4),
                                                                              inactiveColor:bottomActionsBarColor
-                                                                                 .withOpacity(0.5),
+                                                                                 .withValues(alpha:0.5),
                                                                              value:value.volume,
                                                                            ),
                                                                          ),
@@ -405,7 +396,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                               ),
                                                             ),
                                                            SizedBox(
-                                                             width:(widget.bottomActionsBarSize * 2) + 15,
+                                                             width:(widget.options.bottomActionsBarSize * 2) + 15,
                                                              child:Row(
                                                                children: [
                                                                  const SizedBox(width:6,),
@@ -414,7 +405,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      onTap:()=>_onClick(controller.deMute),
                                                                      child: Icon(Icons.volume_off,
                                                                        color:bottomActionsBarColor,
-                                                                       size:widget.bottomActionsBarSize,
+                                                                       size:widget.options.bottomActionsBarSize,
                                                                      ),
                                                                    )
                                                                  else
@@ -422,7 +413,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      onTap:()=>_onClick(controller.mute),
                                                                      child: Icon(Icons.volume_up_outlined,
                                                                        color:bottomActionsBarColor,
-                                                                       size:widget.bottomActionsBarSize,
+                                                                       size:widget.options.bottomActionsBarSize,
                                                                      ),
                                                                    ),
 
@@ -430,7 +421,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                  InkWell(
                                                                    onTap:()async{
 
-                                                                     if(widget.convexMirror){
+                                                                     if(widget.options.convexMirror){
                                                                        Navigator.maybePop(context);
                                                                        return;
                                                                      }
@@ -442,7 +433,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      final Widget child =   FullScreenMode(
 
                                                                        controller:controller,
-                                                                       applyOrientationsEnforcement:widget.applyOrientationsEnforcement,
+                                                                       applyOrientationsEnforcement:widget.options.applyOrientationsEnforcement,
                                                                        onDispose:(){
                                                                          Future.delayed(const Duration(
                                                                              milliseconds:100
@@ -458,8 +449,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                          });
                                                                        },
                                                                      );
-                                                                     if(widget.onNavigate!=null){
-                                                                       return widget.onNavigate!(child);
+                                                                     if(widget.options.onNavigate!=null){
+                                                                       return widget.options.onNavigate!(child);
                                                                      }
 
                                                                      Navigator
@@ -471,11 +462,11 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                                      );
                                                                    },
                                                                    child: Icon(
-                                                                     widget.convexMirror?
+                                                                     widget.options.convexMirror?
                                                                      Icons.fullscreen_exit:
                                                                      Icons.fullscreen,
                                                                      color:bottomActionsBarColor,
-                                                                     size:widget.bottomActionsBarSize,
+                                                                     size:widget.options.bottomActionsBarSize,
                                                                    ),
                                                                  ),
                                                                ],
@@ -498,8 +489,28 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
 
                             if(value.errorDescription!=null)
                               Center(
-                                child: Icon(Icons.error,
-                                  size:widget.bigIconsSize,
+                                child: widget.options.addReloadOptionWhenFailed != null ?
+
+                                PopupMenuButton(
+                                  onSelected:(final String message){
+                                    switch(message) {
+                                      case "reload":
+                                        controller.rebuildInternalPlayerController();
+                                        widget.options.addReloadOptionWhenFailed!(controller.playerController);
+                                        break;
+                                    }
+                                  },
+                                  itemBuilder:(_)=>[
+                                    PopupMenuItem(
+                                      value:"reload",
+                                      child:Text(widget.options.reloadTitle),
+                                    )
+                                  ],
+                                  child: Icon(Icons.error,
+                                    size:widget.options.bigIconsSize,
+                                    color:bottomActionsBarColor,),
+                                ):Icon(Icons.error,
+                                  size:widget.options.bigIconsSize,
                                   color:bottomActionsBarColor,),
                               )
 
@@ -514,7 +525,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                       IgnorePointer(
                                         ignoring:true,
                                         child: Container(
-                                          color:Colors.black.withOpacity(0.2),
+                                          color:Colors.black.withValues(alpha:0.2),
                                           height:height,
                                           width:width,
                                         ),
@@ -525,7 +536,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                         mainAxisAlignment:MainAxisAlignment.start,
                                         children: [
                                           const SizedBox(height:40,),
-                                          if(widget.convexMirror || (widget.withPopIcon))
+                                          if(widget.options.convexMirror || (widget.options.withPopIcon))
                                             Row(
                                               mainAxisAlignment:MainAxisAlignment.start,
                                               crossAxisAlignment:CrossAxisAlignment.start,
@@ -547,7 +558,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 )
                                               ],
                                             ),
-                                          if(widget.showTopVolumeController &&
+                                          if(widget.options.showTopVolumeController &&
                                            mainLayoutConstraints.maxHeight >= 280 &&
                                            mainLayoutConstraints.maxWidth >= 250
                                           )
@@ -586,8 +597,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                   );
                                                 },
                                                 child: Icon(Icons.remove_circle,
-                                                  color:bottomActionsBarColor.withOpacity(0.2),
-                                                  size:widget.bigIconsSize,
+                                                  color:bottomActionsBarColor.withValues(alpha:0.2),
+                                                  size:widget.options.bigIconsSize,
                                                 ),
                                               ),
                                               Container(
@@ -595,14 +606,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 decoration:BoxDecoration(
                                                     shape:BoxShape.circle,
                                                     color: bottomActionsBarBackgroundColor
-                                                    .withOpacity(0.2)
+                                                    .withValues(alpha:0.2)
                                                 ),
                                                 child:Column(
                                                   children: [
                                                     Icon(Icons.volume_up_outlined,
                                                       color:bottomActionsBarColor
-                                                          .withOpacity(0.4),
-                                                      size:widget.bigIconsSize-5,
+                                                          .withValues(alpha:0.4),
+                                                      size:widget.options.bigIconsSize-5,
                                                     ),
                                                     const SizedBox(height:5,),
                                                     Text((value.volume*100).toStringAsFixed(0),
@@ -645,8 +656,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                                 },
                                                 child: Icon(Icons.add_circle,
                                                   color:bottomActionsBarColor
-                                                      .withOpacity(0.2),
-                                                  size:widget.bigIconsSize-5,
+                                                      .withValues(alpha:0.2),
+                                                  size:widget.options.bigIconsSize-5,
                                                 ),
                                               ),
                                             ],
@@ -663,10 +674,11 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                               child: Icon(
                                                 Icons.keyboard_double_arrow_left_rounded,
                                                 size:35,
-                                                color:bottomActionsBarColor.withOpacity(0.6),                                         ),
+                                                color:bottomActionsBarColor.withValues(alpha:0.6),                                         ),
                                             )
                                             ),
-                                            Expanded(child:
+                                            Expanded(
+                                                child:
                                             (value.isBuffering)
                                                 ?
                                             Center(child:SizedBox(
@@ -674,14 +686,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                               width:20,
                                               child:LinearProgressIndicator(
                                                 backgroundColor:bottomActionsBarBackgroundColor,
-                                                color:bottomActionsBarColor,
+                                                color:bottomActionsBarColor.withValues(alpha:0.4),
                                               ),
                                             ),)
                                                 :
                                             GestureDetector(
                                               onTap:()=>_onClick(controller.toggle),
                                               child: Icon(
-                                                playIcons,color:bottomActionsBarColor.withOpacity(0.6),
+                                                playIcons,color:bottomActionsBarColor.withValues(alpha:0.6),
                                                 size:50,
                                               ),
                                             )),
@@ -693,7 +705,7 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                               child: Icon(
                                                 Icons.keyboard_double_arrow_right_rounded,
                                                 size:35,
-                                                color:bottomActionsBarColor.withOpacity(0.6),                                         ),
+                                                color:bottomActionsBarColor.withValues(alpha:0.6),                                         ),
                                             )
                                             ),
                                           ],
@@ -709,14 +721,14 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                               textDirection:TextDirection.ltr,
                               children: [
                                 LeftAceClicker(
-                                    height:widget.height?? height,
+                                    height:widget.options.height?? height,
                                     bottomActionsBarColor:bottomActionsBarColor,
                                     onCall:(){
                                       controller.plusScrubbing(4);
                                     }
                                 ),
                                 RightAceClicker(
-                                    height:widget.height??height,
+                                    height:widget.options.height??height,
                                     bottomActionsBarColor:bottomActionsBarColor,
                                     onCall:(){
                                       controller.minusScrubbing(4);
@@ -724,8 +736,8 @@ class _ShararaVideoPlayerState extends State<ShararaVideoPlayer>
                                 ),
                               ],
                             ),
-                            if(widget.stackChildren!=null)
-                              ...widget.stackChildren!(context,value)
+                            if(widget.options.stackChildren!=null)
+                              ...widget.options.stackChildren!(context,value)
                           ],
                         );
                       }
@@ -989,8 +1001,8 @@ class _FullScreenModeState extends State<FullScreenMode> {
   @override
   Widget build(BuildContext context) {
     return ShararaVideoPlayer(
-      convexMirror:true,
       controller: widget.controller,
+      options:const Options(convexMirror: true)
     );
   }
 }
