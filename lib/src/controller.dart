@@ -24,6 +24,7 @@ class ShararaVideoPlayerController {
     playerController = _buildClass();
   }
   bool autoDisposeVideoPlayerController = false ;
+  bool showLoading = true;
   factory ShararaVideoPlayerController.networkUrl(final Uri uri){
     return ShararaVideoPlayerController(
         videoControllerBuilder: () => VideoPlayerController.networkUrl(uri),
@@ -116,6 +117,7 @@ extension PlayPause on ShararaVideoPlayerController {
 
   /// playing the video
   void play(){
+    showLoading = true;
     if(playerController.value.isPlaying)return;
     _stateChecker(() async{
       playerController.play();
@@ -124,6 +126,7 @@ extension PlayPause on ShararaVideoPlayerController {
 
   /// pause the video
   void pause(){
+    showLoading = false;
     if(!playerController.value.isPlaying)return;
     _stateChecker(() {
       playerController.pause();
@@ -181,7 +184,9 @@ extension PlayPause on ShararaVideoPlayerController {
   void plusScrubbing(final int seconds){
     _stateChecker(() => playerController.seekTo(
         playerController.value.position + Duration(seconds:seconds)
-    ));
+    )
+    );
+
   }
 
   /// minusScrubbing and Skip back some seconds of video

@@ -181,6 +181,7 @@ class _ShararaVideoPlayerState extends State<_ShararaVideoPlayer>
                       valueListenable: controller.playerController,
                       builder:(BuildContext context,final VideoPlayerValue value,_){
 
+
                         return Stack(
                           children: [
                             if(isFullScreen)
@@ -679,7 +680,10 @@ class _ShararaVideoPlayerState extends State<_ShararaVideoPlayer>
                                             ),
                                             Expanded(
                                                 child:
-                                            (value.isBuffering)
+                                            (
+                                            value.isLoading &&
+                                                widget.controller.showLoading
+                                            )
                                                 ?
                                             Center(child:SizedBox(
                                               height:10,
@@ -815,6 +819,16 @@ extension PercentageCalculator on VideoPlayerValue {
   if ( res >= 100 )return 100;
   if ( res <= 0 || res.isNaN)return 0;
   return res;
+  }
+
+  bool get isLoading {
+    return (isBuffering  && !isPlaying ) ;
+  }
+  bool get withinBufferedRange {
+    for (final range in buffered){
+       if( position >= range.start && position <= range.end) return true;
+    }
+    return false;
   }
 }
 
