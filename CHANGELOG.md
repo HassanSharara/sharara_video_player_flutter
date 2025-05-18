@@ -1,3 +1,8 @@
+## 1.2.0
+* construct all parameters inside Option class which gives more arrangement
+* update video player version 
+* add more options to handle errors while playing video
+
 ## 1.1.0
 
 * added new implementations when video player failed to retrieve data 
