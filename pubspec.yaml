@@ -1,6 +1,6 @@
 name: sharara_video_player
 description: "A new Sharara package project for Better Performance and Easy Use."
-version: 1.2.0
+version: 1.2.1
 homepage: https://github.com/HassanSharara
 repository: https://github.com/HassanSharara/sharara_video_player_flutter
 
@@ -12,7 +12,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  video_player: ^2.9.5
+  video_player: ^2.10.0
 
 dev_dependencies:
   flutter_test:

@@ -1,3 +1,6 @@
+## 1.2.1
+* update video_player version to the last version
+
 ## 1.2.0
 * construct all parameters inside Option class which gives more arrangement
 * update video player version 
